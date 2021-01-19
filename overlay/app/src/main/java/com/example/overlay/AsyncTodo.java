@@ -31,6 +31,8 @@ public class AsyncTodo extends AsyncTask<String, Void, String> {
     private static final String TAG_ID = "id";
     private static final String TAG_NAME = "name";
     private static final String TAG_ADDRESS ="country";
+    private int id = 0;
+    private String filepath = "";
 
     @Override
     protected void onPreExecute() {
@@ -61,6 +63,7 @@ public class AsyncTodo extends AsyncTask<String, Void, String> {
 
         String postParameters = "";
         String serverURL = params[0];
+        filepath = params[1];
 
 
 
@@ -126,15 +129,17 @@ public class AsyncTodo extends AsyncTask<String, Void, String> {
             for(int i=0;i<jsonArray.length();i++){
 
                 JSONObject item = jsonArray.getJSONObject(i);
-                Integer[] square = new Integer[5];
-                int id = item.getInt(TAG_ID);
+                Integer[] square = new Integer[8];
+                id = item.getInt("contentsid");
 
-                IdArray.add(item.getInt("id"));
-                square[0] = item.getInt("id");
-                square[1] = item.getInt("square1");
-                square[2] = item.getInt("square2");
-                square[3] = item.getInt("square3");
-                square[4] = item.getInt("square4");
+                square[0] = item.getInt("thick");
+                square[1] = item.getInt("color");
+                square[2] = item.getInt("location1");
+                square[3] = item.getInt("location2");
+                square[4] = item.getInt("location3");
+                square[5] = item.getInt("location4");
+                square[6] = item.getInt("width");
+                square[7] = item.getInt("height");
 
                 Log.d("%%%%%%%%%%%%", Arrays.toString(square));
                 Education education = new Education();
@@ -151,7 +156,7 @@ public class AsyncTodo extends AsyncTask<String, Void, String> {
             Log.d(TAG, "showResult : ", e);
         }
         try {
-            a = asyncDownload.execute("http://192.168.0.36/downloadww.php?idarray="+IdArray.toString()).get();
+            a = asyncDownload.execute("http://192.168.0.36/downloadww.php?id="+id+"&filepath="+filepath,""+id).get();
             Log.d("^^^^^^^^^^^^^", a);
         }  catch (Exception e) {
             e.printStackTrace();

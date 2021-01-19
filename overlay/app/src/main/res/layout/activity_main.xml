@@ -7,6 +7,17 @@
     tools:context=".MainActivity">
 
     <Button
+        android:id="@+id/make"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="8dp"
+        android:text="make"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textView2"
+        tools:layout_editor_absoluteX="8dp" />
+
+    <Button
         android:id="@+id/bt_start"
         android:layout_width="368dp"
         android:layout_height="wrap_content"
@@ -57,5 +68,13 @@
         android:text="Button"
         app:layout_constraintBottom_toTopOf="@+id/bt_stop"
         tools:layout_editor_absoluteX="161dp" />
+
+    <Button
+        android:id="@+id/dwtest"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:text="test"
+        app:layout_constraintBottom_toTopOf="@+id/dbbutton" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

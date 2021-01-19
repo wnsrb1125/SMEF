@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.provider.Settings;
 import android.view.View;
 import android.widget.Button;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -25,6 +26,14 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {   // 마시멜로우 이상일 경우
+            if (!Settings.canDrawOverlays(this)) {              // 체크
+                Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                        Uri.parse("package:" + getPackageName())).putExtra("edu", result);
+                startActivityForResult(intent, ACTION_MANAGE_OVERLAY_PERMISSION_REQUEST_CODE);
+            }
+        }
+
         setContentView(R.layout.activity_main);
 
         Button bt_start = (Button) findViewById(R.id.bt_start);
@@ -37,6 +46,14 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        Button bt_make = (Button) findViewById(R.id.make);
+        bt_make.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startMakeServ();
+            }
+        });
+
         Button bt_db = (Button)findViewById(R.id.dbbutton);
         bt_db.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -44,7 +61,7 @@ public class MainActivity extends AppCompatActivity {
 
                 AsyncTodo task = new AsyncTodo();
                 try {
-                    result = task.execute("http://192.168.0.36/getjson.php","").get();
+                    result = task.execute("http://192.168.0.36/getjson.php?id=3","data").get();
                 } catch (ExecutionException e) {
                     e.printStackTrace();
                 } catch (InterruptedException e) {
@@ -62,20 +79,27 @@ public class MainActivity extends AppCompatActivity {
                 stopService(new Intent(MainActivity.this, MyService.class));
             }
         });
+
+        Button dw_test = (Button) findViewById(R.id.dwtest);
+        dw_test.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(v.getContext(),TestaActivity.class);
+                startActivity(intent);
+
+                //AsyncDownload dw = new AsyncDownload();
+                //dw.execute("http://192.168.0.36/downloadww.php?idarray=[10,11]");
+            }
+        });
     }
 
     private void startServ() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {   // 마시멜로우 이상일 경우
-            if (!Settings.canDrawOverlays(this)) {              // 체크
-                Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-                        Uri.parse("package:" + getPackageName())).putExtra("edu", result);
-                startActivityForResult(intent, ACTION_MANAGE_OVERLAY_PERMISSION_REQUEST_CODE);
-            } else {
-                startService(new Intent(MainActivity.this, MyService.class).putExtra("edu", result));
-            }
-        } else {
-            startService(new Intent(MainActivity.this, MyService.class).putExtra("edu", result));
-        }
+        startService(new Intent(MainActivity.this, MyService.class).putExtra("edu", result));
+    }
+
+    private void startMakeServ() {
+        Toast.makeText(getApplicationContext(),"뭐고이고",Toast.LENGTH_SHORT).show();
+        startService(new Intent(MainActivity.this, MakeService.class));
     }
 
 

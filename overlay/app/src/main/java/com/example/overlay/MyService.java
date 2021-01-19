@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.PixelFormat;
 import android.media.MediaPlayer;
+import android.net.Uri;
 import android.os.IBinder;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -21,6 +22,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -31,13 +33,15 @@ public class MyService extends Service{
     private int educations_length;
     private ArrayList<Education> educations = new ArrayList<Education>();
     private int count = 0;
+    private int zero = 0;
     private Integer[] a = {11,65,180,75,190};
     private Painter painter;
-    private LinearLayout thlp;
     private Education education;
     private WindowManager wm;
-    private  View mView;
+    private View mView;
+    private View graffitiView;
     private MediaPlayer mediaPlayer;
+    private String media_path = "file:///data/data/com.example.overlay/3/";
     private int current_index = 0;
     private Intent passedIntent;
     private float START_X;                    //터치 시작 점
@@ -45,11 +49,23 @@ public class MyService extends Service{
     private int PREV_X;                            //뷰의 시작 점
     private int PREV_Y;                            //뷰의 시작 점
     private int MAX_X = -1, MAX_Y = -1;
+    private int media_count = 1;
+    private WindowManager.LayoutParams firstparams;
     private WindowManager.LayoutParams params;
     private WindowManager.LayoutParams params2;
 
+
     private View.OnTouchListener mViewTouchListener = new View.OnTouchListener() {
         @Override public boolean onTouch(View v, MotionEvent event) {
+            Toast.makeText(getApplicationContext(),event.getX()+","+event.getY(),Toast.LENGTH_SHORT).show();
+            if((event.getX() > a[2] && event.getX() < a[4])&&
+                    (event.getY() > a[3] && event.getY() < a[5])) {
+                if (count < educations_length) {
+                    count++;
+                    media_count++;
+                    player();
+                }
+            }
             switch(event.getAction()) {
                 case MotionEvent.ACTION_DOWN:
                     if(MAX_X == -1)
@@ -75,6 +91,21 @@ public class MyService extends Service{
         }
     };
 
+    private View.OnTouchListener graffitiViewTouchListener = new View.OnTouchListener() {
+        @Override public boolean onTouch(View v, MotionEvent event) {
+            Toast.makeText(getApplicationContext(),event.getX()+","+event.getY(),Toast.LENGTH_SHORT).show();
+            if((event.getX() > a[2] && event.getX() < a[4])&&
+                    (event.getY() > a[3] && event.getY() < a[5])) {
+                if (count < educations_length) {
+                    count++;
+                    media_count++;
+                    player();
+                }
+            }
+            return true;
+        }
+    };
+
     @Override
     public IBinder onBind(Intent intent) { return null; }
 
@@ -82,14 +113,14 @@ public class MyService extends Service{
     public void onCreate() {
         super.onCreate();
 
-
-        final int voice[] = new int[] {R.raw.o, R.raw.asd, R.raw.th, R.raw.fo, R.raw.fi};
         LayoutInflater inflate = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         wm = (WindowManager) getSystemService(WINDOW_SERVICE);
 
+        firstparams = new WindowManager.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,LinearLayout.LayoutParams.MATCH_PARENT,
+                WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
+                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,PixelFormat.TRANSLUCENT);
 
-
-        params = new WindowManager.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 300,
+        params = new WindowManager.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 100,
                 WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
                 WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
                 ,PixelFormat.RGB_888);
@@ -103,11 +134,13 @@ public class MyService extends Service{
         params2.gravity = Gravity.CENTER | Gravity.TOP;
 
         mView = inflate.inflate(R.layout.view_in_service, null);
+        graffitiView = inflate.inflate(R.layout.graffiti_view, null);
 
         final Button bt_exit =  (Button) mView.findViewById(R.id.bt_exit);
         final Button bt_before =  (Button) mView.findViewById(R.id.bt_before);
         final Button bt_next =  (Button) mView.findViewById(R.id.bt_next);
         final Button bt_current =  (Button) mView.findViewById(R.id.bt_current);
+        final LinearLayout ll = (LinearLayout) mView.findViewById(R.id.service_view);
 
         bt_exit.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -116,66 +149,73 @@ public class MyService extends Service{
             }
         });
 
-        bt_before.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (current_index > 0) {
-                    current_index--;
-                }
-                Toast.makeText(getApplicationContext(),""+current_index,Toast.LENGTH_SHORT).show();
-                player(voice);
-            }
-        });
-
         bt_current.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mediaPlayer = MediaPlayer.create(MyService.this,voice[current_index]);
-                mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
-                    @Override
-                    public void onPrepared(MediaPlayer mp) {
-                        mediaPlayer.start();
-                    }
-                });
+                if (count == educations_length) {
+                    count--;
+                }
+                player();
+                count++;
+            }
+        });
+
+        bt_before.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (count > 0) {
+                    count--;
+                    media_count--;
+                    player();
+                }
             }
         });
 
         bt_next.setOnClickListener(new View.OnClickListener() {
-                                       @Override
-                                       public void onClick(View v) {
-                                           if (current_index < 4) {
-                                               current_index++;
-                                           }
-                                           Toast.makeText(getApplicationContext(), "" + current_index, Toast.LENGTH_SHORT).show();
-                                           player(voice);
-                                       }
-                                   });
+           @Override
+           public void onClick(View v) {
+               if (count < educations_length - 1) {
+                   count++;
+                   media_count++;
+                   player();
+               }
+           }
+       });
 
-
+        Intent i = new Intent();
+        i.setAction(Intent.ACTION_MAIN);
+        i.addCategory(Intent.CATEGORY_HOME);
+        startActivity(i);
+        wm.addView(graffitiView,firstparams);
         wm.addView(mView, params);
         mView.setOnTouchListener(mViewTouchListener);
+        graffitiView.setOnTouchListener(graffitiViewTouchListener);
     }
 
-    public void player(int[] voices) {
-        if (count > 0) {
+    public void player() {
+
+        if (painter != null && count != educations_length) {
             wm.removeView(painter);
         }
         if(count < educations_length ) {
             education = educations.get(count);
             a = education.getSoundPaint();
-
             painter = new Painter(this);
             painter.setDrawInformation(a);
             wm.addView(painter, params2);
-            mediaPlayer = MediaPlayer.create(MyService.this, voices[current_index]);
-            mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
-                @Override
-                public void onPrepared(MediaPlayer mp) {
-                    mediaPlayer.start();
-                }
-            });
-            count++;
+            mediaPlayer = new MediaPlayer();
+            try {
+                mediaPlayer.setDataSource(MyService.this, Uri.parse(media_path+count+".m4a"));
+                mediaPlayer.prepare();
+                mediaPlayer.start();
+
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
+        Toast.makeText(getApplicationContext(), "" + count, Toast.LENGTH_SHORT).show();
+        zero++;
     }
 
     private void setMaxPosition() {
@@ -198,12 +238,12 @@ public class MyService extends Service{
         passedIntent = intent;
         String result = intent.getStringExtra("edu");
         showResult(result);
-        Log.d("씨발",result.toString());
         return super.onStartCommand(intent, flags, startId);
     }
 
     public ArrayList<Education> showResult(String mJsonString) {
         String TAG_JSON="webnautes";
+        DisplayMetrics dm = getResources().getDisplayMetrics();
 
         try {
             JSONObject jsonObject = new JSONObject(mJsonString);
@@ -212,14 +252,30 @@ public class MyService extends Service{
             for(int i=0;i<jsonArray.length();i++){
 
                 JSONObject item = jsonArray.getJSONObject(i);
-                Integer[] square = new Integer[5];
+                Integer[] square = new Integer[8];
+
+                int db_width = item.getInt("width");
+                int db_height = item.getInt("height");
+
+                int now_width = dm.widthPixels;
+                int now_height = dm.heightPixels;
+
+                float width_percent = (float)now_width / (float)db_width;
+                float height_percent = (float)now_height / (float)db_height;
+
+
+
+
                 int id = item.getInt("id");
 
-                square[0] = item.getInt("id");
-                square[1] = item.getInt("square1");
-                square[2] = item.getInt("square2");
-                square[3] = item.getInt("square3");
-                square[4] = item.getInt("square4");
+                square[0] = item.getInt("thick");
+                square[1] = item.getInt("color");
+                square[2] = new Integer((int) ((item.getInt("location1") * width_percent)));
+                square[3] = new Integer((int) ((item.getInt("location2") * height_percent)));
+                square[4] = new Integer((int) ((item.getInt("location3") * width_percent)));
+                square[5] = new Integer((int) ((item.getInt("location4") * height_percent)));
+                square[6] = item.getInt("width");
+                square[7] = item.getInt("height");
 
                 Log.d("@################", Arrays.toString(square));
                 Education education = new Education();
@@ -227,7 +283,7 @@ public class MyService extends Service{
                 education.setSoundPaint(square);
 
                 educations.add(education);
-                Log.d("*****************", educations.toString());
+                Log.d("*****************", String.valueOf(width_percent)+height_percent);
 
             }
 
@@ -250,6 +306,10 @@ public class MyService extends Service{
             if(painter != null) {
                 wm.removeView(painter);
                 painter = null;
+            }
+            if(graffitiView != null) {
+                wm.removeView(graffitiView);
+                graffitiView = null;
             }
             wm = null;
         }

@@ -1,8 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent" android:layout_height="match_parent"
-    android:orientation="horizontal"
-    android:id="@+id/service_view">
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <ToggleButton
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textOn="종료"
+        android:textOff="녹음"
+        android:id="@+id/bt_rec"
+        android:onClick="onToggleClicked"/>
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -14,6 +21,13 @@
             android:layout_weight="1"
             android:layout_height="wrap_content"
             android:text="before" />
+
+        <Button
+            android:id="@+id/bt_lock"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:text="lock" />
 
         <Button
             android:id="@+id/bt_next"
@@ -34,7 +48,7 @@
             android:layout_width="0dp"
             android:layout_weight="1"
             android:layout_height="wrap_content"
-        android:text="current" />
+            android:text="current" />
     </LinearLayout>
 
 </LinearLayout>

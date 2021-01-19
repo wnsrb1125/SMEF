@@ -21,15 +21,15 @@ public class Painter extends View {
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
+
         Paint paint = new Paint();
         paint.setStrokeWidth(20f);
         paint.setAntiAlias(true);
         paint.setColor(Color.BLUE);
         paint.setStyle(Paint.Style.STROKE);
 
-        Rect rect = new Rect(this.paint[1],this.paint[2],this.paint[3],this.paint[4]);
+        Rect rect = new Rect(this.paint[2],this.paint[3],this.paint[4],this.paint[5]);
         canvas.drawRect(rect,paint);
-
 
     }
 
