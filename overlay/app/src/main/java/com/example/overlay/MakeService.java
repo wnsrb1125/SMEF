@@ -25,7 +25,9 @@ public class MakeService extends Service {
     private ArrayList<Education> educations = new ArrayList<Education>();
     private int count = 0;
     private int zero = 0;
+    LayoutInflater inflate;
     private Integer[] a = {11,65,180,75,190,200};
+    private Integer[] draw;
     private Painter painter;
     private Education education;
     private WindowManager wm;
@@ -38,6 +40,8 @@ public class MakeService extends Service {
     private Intent passedIntent;
     private float START_X;                    //터치 시작 점
     private float START_Y;                    //터치 시작 점
+    float START_X2 = 0;
+    float START_Y2 = 0;
     private int PREV_X;                            //뷰의 시작 점
     private int PREV_Y;                            //뷰의 시작 점
     private int MAX_X = -1, MAX_Y = -1;
@@ -61,7 +65,6 @@ public class MakeService extends Service {
                 case MotionEvent.ACTION_MOVE:
                     int x = (int)(event.getRawX() - START_X);
                     int y = (int)(event.getRawY() - START_Y);
-
                     params.x = PREV_X + x;
                     params.y = PREV_Y + y;
 
@@ -78,21 +81,39 @@ public class MakeService extends Service {
     private View.OnTouchListener touchListener = new View.OnTouchListener() {
         @Override
         public boolean onTouch(View v, MotionEvent event) {
-            int x = (int)event.getX();
-            int y = (int)event.getY();
+            switch (event.getAction()) {
+                case MotionEvent.ACTION_DOWN:
+                    if(painter != null) {
+                        wm.removeView(painter);
+                        painter = null;
+                    }
+                    painter = new Painter(getApplicationContext());
+                    START_X2 = event.getX();
+                    START_Y2 = event.getY();
+                    draw = new Integer[] {1,1,Integer.valueOf((int)START_X2),Integer.valueOf((int)START_Y2),Integer.valueOf((int)START_X2+1),Integer.valueOf((int)START_Y2+1)};
+                    painter.setDrawInformation(draw);
+                    wm.addView(painter,params3);
+                    break;
+                case MotionEvent.ACTION_MOVE:
+                    float ingX = event.getX();
+                    float ingY = event.getY();
+                    draw = new Integer[] {1,1,Integer.valueOf((int)START_X2),Integer.valueOf((int)START_Y2),Integer.valueOf((int)ingX),Integer.valueOf((int)ingY)};
+                    painter.setDrawInformation(draw);
+                    painter.invalidate();
+                    break;
 
-            if(painter != null) {
-                wm.removeView(painter);
-                painter = null;
+                case MotionEvent.ACTION_UP:
+                    wm.removeView(squareView);
+                    if (squareView == null) {
+                        addSquareviewInit();
+                    }
+                    wm.addView(squareView,params3);
+                    squareView.setOnTouchListener(touchListener);
+                    break;
             }
 
-            painter = new Painter(getApplicationContext());
-            painter.setDrawInformation(new Integer[] {1,1,10,10,x,y});
 
 
-            wm.removeView(squareView);
-            wm.addView(painter,params3);
-            wm.addView(squareView,params3);
 
             return true;
         }
@@ -113,7 +134,7 @@ public class MakeService extends Service {
 
     public void onCreate() {
         super.onCreate();
-        LayoutInflater inflate = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        inflate = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         wm = (WindowManager) getSystemService(WINDOW_SERVICE);
 
         params = new WindowManager.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 200,
@@ -137,7 +158,80 @@ public class MakeService extends Service {
         squareView = inflate.inflate(R.layout.square_make, null);
         graffitiView = inflate.inflate(R.layout.graffiti_view, null);
 
-        //squareView
+        //mView
+        final Button bt_exit =  (Button) mView.findViewById(R.id.bt_exit);
+        final Button bt_before =  (Button) mView.findViewById(R.id.bt_before);
+        final Button bt_next =  (Button) mView.findViewById(R.id.bt_next);
+        final Button bt_current =  (Button) mView.findViewById(R.id.bt_current);
+        final Button bt_lock = (Button) mView.findViewById(R.id.bt_lock);
+        final ToggleButton bt_rec = (ToggleButton) mView.findViewById(R.id.bt_rec);
+
+
+        bt_rec.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                if (bt_rec.getText().equals("녹음")) {
+                    Toast.makeText(getApplicationContext(),"녹음종료",Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(getApplicationContext(),"녹음시작",Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+
+        bt_exit.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                stopService(passedIntent);
+            }
+        });
+
+        bt_current.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (count == educations_length) {
+                    count--;
+                }
+                count++;
+            }
+        });
+
+        bt_before.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (count > 0) {
+                    count--;
+                    media_count--;
+                }
+            }
+        });
+        bt_lock.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                wm.removeView(mView);
+                if (graffitiView == null) {
+                    addGraffitiviewInit();
+                }
+                if (squareView == null) {
+                    addSquareviewInit();
+                }
+                wm.addView(graffitiView, params2);
+                wm.addView(squareView,params3);
+                squareView.setOnTouchListener(touchListener);
+            }
+        });
+
+        bt_next.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (count < educations_length) {
+                    count++;
+                    media_count++;
+                }
+            }
+        });
+
+        //squareview
         final Button bt_color =  (Button) squareView.findViewById(R.id.bt_color);
         final Button bt_thick =  (Button) squareView.findViewById(R.id.bt_thick);
         final Button bt_confirm =  (Button) squareView.findViewById(R.id.bt_confirm);
@@ -192,9 +286,28 @@ public class MakeService extends Service {
                     squareView = null;
                 }
                 wm.addView(mView,params);
+                mView.setOnTouchListener(mViewTouchListener);
             }
         });
 
+
+        Intent i = new Intent();
+        i.setAction(Intent.ACTION_MAIN);
+        i.addCategory(Intent.CATEGORY_HOME);
+        startActivity(i);
+        wm.addView(mView, params);
+        mView.setOnTouchListener(mViewTouchListener);
+        squareView.setOnTouchListener(touchListener);
+    }
+
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        passedIntent = intent;
+        return super.onStartCommand(intent, flags, startId);
+    }
+
+    public void addMviewInit() {
+        mView = inflate.inflate(R.layout.view_in_make, null);
 
         //mView
         final Button bt_exit =  (Button) mView.findViewById(R.id.bt_exit);
@@ -209,11 +322,11 @@ public class MakeService extends Service {
             @Override
             public void onClick(View v) {
 
-               if (bt_rec.getText().equals("녹음")) {
-                   Toast.makeText(getApplicationContext(),"녹음종료",Toast.LENGTH_SHORT).show();
-               } else {
-                   Toast.makeText(getApplicationContext(),"녹음시작",Toast.LENGTH_SHORT).show();
-               }
+                if (bt_rec.getText().equals("녹음")) {
+                    Toast.makeText(getApplicationContext(),"녹음종료",Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(getApplicationContext(),"녹음시작",Toast.LENGTH_SHORT).show();
+                }
             }
         });
 
@@ -247,8 +360,15 @@ public class MakeService extends Service {
             @Override
             public void onClick(View v) {
                 wm.removeView(mView);
+                if (graffitiView == null) {
+                    addGraffitiviewInit();
+                }
+                if (squareView == null) {
+                    addSquareviewInit();
+                }
                 wm.addView(graffitiView, params2);
                 wm.addView(squareView,params3);
+                squareView.setOnTouchListener(touchListener);
             }
         });
 
@@ -261,22 +381,73 @@ public class MakeService extends Service {
                 }
             }
         });
-
-        Intent i = new Intent();
-        i.setAction(Intent.ACTION_MAIN);
-        i.addCategory(Intent.CATEGORY_HOME);
-        startActivity(i);
-        wm.addView(mView, params);
-        mView.setOnTouchListener(mViewTouchListener);
-        squareView.setOnTouchListener(touchListener);
     }
+    public void addGraffitiviewInit() {
+        graffitiView = inflate.inflate(R.layout.graffiti_view, null);
 
-    @Override
-    public int onStartCommand(Intent intent, int flags, int startId) {
-        passedIntent = intent;
-        return super.onStartCommand(intent, flags, startId);
     }
+    public void addSquareviewInit() {
 
+        squareView = inflate.inflate(R.layout.square_make, null);
+
+        final Button bt_color =  (Button) squareView.findViewById(R.id.bt_color);
+        final Button bt_thick =  (Button) squareView.findViewById(R.id.bt_thick);
+        final Button bt_confirm =  (Button) squareView.findViewById(R.id.bt_confirm);
+        final Button bt_delete =  (Button) squareView.findViewById(R.id.bt_delete);
+        final Button bt_back = (Button) squareView.findViewById(R.id.bt_back);
+        final LinearLayout ll = (LinearLayout) squareView.findViewById(R.id.layout);
+
+        bt_color.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+            }
+        });
+
+        bt_thick.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+            }
+        });
+
+        bt_confirm.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+            }
+        });
+
+        bt_delete.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(painter != null) {
+                    wm.removeView(painter);
+                    painter = null;
+                }
+            }
+        });
+
+        bt_back.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(painter != null) {
+                    wm.removeView(painter);
+                    painter = null;
+                }
+                if(graffitiView != null) {
+                    wm.removeView(graffitiView);
+                    graffitiView = null;
+                }
+                if(squareView != null) {
+                    wm.removeView(squareView);
+                    squareView = null;
+                }
+                wm.addView(mView,params);
+                mView.setOnTouchListener(mViewTouchListener);
+            }
+        });
+    }
     @Override
     public void onDestroy() {
         super.onDestroy();

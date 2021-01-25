@@ -57,15 +57,6 @@ public class MyService extends Service{
 
     private View.OnTouchListener mViewTouchListener = new View.OnTouchListener() {
         @Override public boolean onTouch(View v, MotionEvent event) {
-            Toast.makeText(getApplicationContext(),event.getX()+","+event.getY(),Toast.LENGTH_SHORT).show();
-            if((event.getX() > a[2] && event.getX() < a[4])&&
-                    (event.getY() > a[3] && event.getY() < a[5])) {
-                if (count < educations_length) {
-                    count++;
-                    media_count++;
-                    player();
-                }
-            }
             switch(event.getAction()) {
                 case MotionEvent.ACTION_DOWN:
                     if(MAX_X == -1)
