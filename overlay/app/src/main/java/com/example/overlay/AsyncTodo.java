@@ -28,9 +28,6 @@ public class AsyncTodo extends AsyncTask<String, Void, String> {
     private ArrayList<Integer> IdArray = new ArrayList<Integer>();
     private int count = 0;
     private ArrayList<Education> mArrayList = new ArrayList<Education>();
-    private static final String TAG_ID = "id";
-    private static final String TAG_NAME = "name";
-    private static final String TAG_ADDRESS ="country";
     private int id = 0;
     private String filepath = "";
 

@@ -5,8 +5,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.PixelFormat;
 import android.media.MediaPlayer;
+import android.media.MediaRecorder;
 import android.os.IBinder;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -15,14 +17,18 @@ import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.Toast;
-import android.widget.ToggleButton;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 
 public class MakeService extends Service {
 
     private int educations_length;
     private ArrayList<Education> educations = new ArrayList<Education>();
+    private ArrayList<File> files = new ArrayList<File>();
+    private ArrayList<String> filenames = new ArrayList<String>();
+    private String filename;
     private int count = 0;
     private int zero = 0;
     LayoutInflater inflate;
@@ -45,6 +51,10 @@ public class MakeService extends Service {
     private int PREV_X;                            //뷰의 시작 점
     private int PREV_Y;                            //뷰의 시작 점
     private int MAX_X = -1, MAX_Y = -1;
+    private int onoff = 0;
+    private int again = 0;
+    private MediaRecorder recorder;
+    private File file;
     private int media_count = 1;
     private WindowManager.LayoutParams params;
     private WindowManager.LayoutParams params2;
@@ -86,6 +96,7 @@ public class MakeService extends Service {
                     if(painter != null) {
                         wm.removeView(painter);
                         painter = null;
+                        onoff = 1;
                     }
                     painter = new Painter(getApplicationContext());
                     START_X2 = event.getX();
@@ -103,9 +114,24 @@ public class MakeService extends Service {
                     break;
 
                 case MotionEvent.ACTION_UP:
+                    Integer finalX = Integer.valueOf((int)event.getX());
+                    Integer finalY = Integer.valueOf((int)event.getY());
                     wm.removeView(squareView);
                     if (squareView == null) {
                         addSquareviewInit();
+                    }
+
+                    DisplayMetrics dm = getResources().getDisplayMetrics();
+
+                    Education education = new Education();
+                    education.setSoundPaint(new Integer[] {1,1,Integer.valueOf((int)START_X2),Integer.valueOf((int)START_Y2),finalX,finalY,dm.widthPixels,dm.heightPixels});
+                    if (onoff == 1) {
+                        Toast.makeText(getApplicationContext(),count+"",Toast.LENGTH_SHORT).show();
+                        educations.set(count,education);
+                        onoff = 0;
+                    }
+                    else {
+                        educations.add(education);
                     }
                     wm.addView(squareView,params3);
                     squareView.setOnTouchListener(touchListener);
@@ -137,7 +163,7 @@ public class MakeService extends Service {
         inflate = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         wm = (WindowManager) getSystemService(WINDOW_SERVICE);
 
-        params = new WindowManager.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 200,
+        params = new WindowManager.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 300,
                 WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
                 WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
                 , PixelFormat.RGB_888);
@@ -162,19 +188,105 @@ public class MakeService extends Service {
         final Button bt_exit =  (Button) mView.findViewById(R.id.bt_exit);
         final Button bt_before =  (Button) mView.findViewById(R.id.bt_before);
         final Button bt_next =  (Button) mView.findViewById(R.id.bt_next);
-        final Button bt_current =  (Button) mView.findViewById(R.id.bt_current);
         final Button bt_lock = (Button) mView.findViewById(R.id.bt_lock);
-        final ToggleButton bt_rec = (ToggleButton) mView.findViewById(R.id.bt_rec);
+        final Button bt_end = (Button) mView.findViewById(R.id.bt_end);
+        final Button bt_rec = (Button) mView.findViewById(R.id.bt_rec);
+        final Button bt_rec2 = (Button) mView.findViewById(R.id.bt_rec2);
 
+        bt_end.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+            AsyncUpload asyncUpload = new AsyncUpload();
+            asyncUpload.setUserid(1);
+            asyncUpload.execute(educations.toArray(new Education[educations.size()]));
+            }
+        });
+
+        bt_rec2.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (bt_rec.getText().equals("재생")) {
+                    again = 1;
+                    bt_rec2.setVisibility(View.GONE);
+                    bt_rec.setText("종료");
+                    Toast.makeText(getApplicationContext(),"녹음시작",Toast.LENGTH_SHORT).show();
+                    try {
+                        file = File.createTempFile("asdasd"+count,".mp4", getApplicationContext().getCacheDir());
+                        filename = file.getAbsolutePath();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    recorder = new MediaRecorder();
+                    recorder.setAudioSource(MediaRecorder.AudioSource.MIC);
+                    recorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
+                    recorder.setAudioEncoder(MediaRecorder.AudioEncoder.DEFAULT);
+                    recorder.setOutputFile(filename);
+
+                    try {
+                        recorder.prepare();
+                        recorder.start();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        });
 
         bt_rec.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
-                if (bt_rec.getText().equals("녹음")) {
+                if (bt_rec.getText().equals("종료")) {
                     Toast.makeText(getApplicationContext(),"녹음종료",Toast.LENGTH_SHORT).show();
-                } else {
+                    if (recorder != null) {
+                        recorder.stop();
+                        recorder.release();
+                        recorder = null;
+                        if (again == 0) {
+                            files.add(file);
+                            filenames.add(filename);
+                        }
+                        else {
+                            files.set(count,file);
+                            filenames.set(count,filename);
+                            again = 0;
+                        }
+                        bt_rec.setText("재생");
+                    }
+                    bt_rec2.setVisibility(View.VISIBLE);
+                } else if(bt_rec.getText().equals("녹음")){
+                    bt_rec.setText("종료");
                     Toast.makeText(getApplicationContext(),"녹음시작",Toast.LENGTH_SHORT).show();
+                    try {
+                        file = File.createTempFile("asdasd"+count,".mp4", getApplicationContext().getCacheDir());
+                        filename = file.getAbsolutePath();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    recorder = new MediaRecorder();
+                    recorder.setAudioSource(MediaRecorder.AudioSource.MIC);
+                    recorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
+                    recorder.setAudioEncoder(MediaRecorder.AudioEncoder.DEFAULT);
+                    recorder.setOutputFile(filename);
+
+                    try {
+                        recorder.prepare();
+                        recorder.start();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+
+                } else if(bt_rec.getText().equals("재생")) {
+                    mediaPlayer = new MediaPlayer();
+                    try {
+                        mediaPlayer.setDataSource(filenames.get(count));
+                        mediaPlayer.prepare();
+                        mediaPlayer.start();
+
+
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    bt_rec2.setVisibility(View.VISIBLE);
                 }
             }
         });
@@ -186,25 +298,60 @@ public class MakeService extends Service {
             }
         });
 
-        bt_current.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (count == educations_length) {
-                    count--;
-                }
-                count++;
-            }
-        });
-
         bt_before.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (count > 0) {
+                if (count > 0 && count < educations.size()) {
                     count--;
-                    media_count--;
+                    bt_rec.setText("녹음");
+                    bt_rec2.setVisibility(View.GONE);
+                    if (painter != null) {
+                        wm.removeView(mView);
+                        wm.removeView(painter);
+                        painter = new Painter(getApplicationContext());
+                        painter.setDrawInformation(educations.get(count).getSoundPaint());
+                        wm.addView(painter,params3);
+                        wm.addView(mView,params);
+                        mView.setOnTouchListener(mViewTouchListener);
+                    }
+                    if(files.get(count) != null) {
+                        bt_rec.setText("재생");
+                        bt_rec2.setVisibility(View.VISIBLE);
+                    }
+                    else {
+                        bt_rec2.setVisibility(View.INVISIBLE);
+                    }
                 }
             }
         });
+
+        bt_next.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                count++;
+                bt_rec.setText("녹음");
+                bt_rec2.setVisibility(View.GONE);
+                if (painter != null && count < educations.size()) {
+                    wm.removeView(painter);
+                    painter = null;
+                    wm.removeView(mView);
+                    painter = new Painter(getApplicationContext());
+                    painter.setDrawInformation(educations.get(count).getSoundPaint());
+                    wm.addView(painter, params3);
+                    wm.addView(mView, params);
+                    mView.setOnTouchListener(mViewTouchListener);
+                    if(files.get(count) != null) {
+                        bt_rec.setText("재생");
+                        bt_rec2.setVisibility(View.VISIBLE);
+                    }
+                }
+                else if(painter != null){
+                    wm.removeView(painter);
+                    painter = null;
+                }
+            }
+        });
+
         bt_lock.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -218,16 +365,6 @@ public class MakeService extends Service {
                 wm.addView(graffitiView, params2);
                 wm.addView(squareView,params3);
                 squareView.setOnTouchListener(touchListener);
-            }
-        });
-
-        bt_next.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (count < educations_length) {
-                    count++;
-                    media_count++;
-                }
             }
         });
 
@@ -256,7 +393,16 @@ public class MakeService extends Service {
         bt_confirm.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
+                if(graffitiView != null) {
+                    wm.removeView(graffitiView);
+                    graffitiView = null;
+                }
+                if(squareView != null) {
+                    wm.removeView(squareView);
+                    squareView = null;
+                }
+                wm.addView(mView,params);
+                mView.setOnTouchListener(mViewTouchListener);
             }
         });
 
@@ -306,16 +452,15 @@ public class MakeService extends Service {
         return super.onStartCommand(intent, flags, startId);
     }
 
-    public void addMviewInit() {
+    public void addmViewInit() {
         mView = inflate.inflate(R.layout.view_in_make, null);
 
         //mView
         final Button bt_exit =  (Button) mView.findViewById(R.id.bt_exit);
         final Button bt_before =  (Button) mView.findViewById(R.id.bt_before);
         final Button bt_next =  (Button) mView.findViewById(R.id.bt_next);
-        final Button bt_current =  (Button) mView.findViewById(R.id.bt_current);
         final Button bt_lock = (Button) mView.findViewById(R.id.bt_lock);
-        final ToggleButton bt_rec = (ToggleButton) mView.findViewById(R.id.bt_rec);
+        final Button bt_rec = (Button) mView.findViewById(R.id.bt_rec);
 
 
         bt_rec.setOnClickListener(new View.OnClickListener() {
@@ -337,25 +482,42 @@ public class MakeService extends Service {
             }
         });
 
-        bt_current.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (count == educations_length) {
-                    count--;
-                }
-                count++;
-            }
-        });
-
         bt_before.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (count > 0) {
                     count--;
-                    media_count--;
+                    try {
+                        if (painter != null) {
+                            wm.removeView(mView);
+                            wm.removeView(painter);
+                            painter = new Painter(getApplicationContext());
+                            painter.setDrawInformation(educations.get(count).getSoundPaint());
+                            wm.addView(painter,params3);
+                            wm.addView(mView,params);
+                            mView.setOnTouchListener(mViewTouchListener);
+                        }
+
+                    }catch (Exception E) {
+                        Log.d("",E.toString());
+                    }
+
                 }
             }
         });
+
+        bt_next.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (painter != null) {
+                    wm.removeView(painter);
+                    painter = null;
+                }
+                count++;
+
+            }
+        });
+
         bt_lock.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -369,16 +531,6 @@ public class MakeService extends Service {
                 wm.addView(graffitiView, params2);
                 wm.addView(squareView,params3);
                 squareView.setOnTouchListener(touchListener);
-            }
-        });
-
-        bt_next.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (count < educations_length) {
-                    count++;
-                    media_count++;
-                }
             }
         });
     }
@@ -414,7 +566,16 @@ public class MakeService extends Service {
         bt_confirm.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
+                if(graffitiView != null) {
+                    wm.removeView(graffitiView);
+                    graffitiView = null;
+                }
+                if(squareView != null) {
+                    wm.removeView(squareView);
+                    squareView = null;
+                }
+                wm.addView(mView,params);
+                mView.setOnTouchListener(mViewTouchListener);
             }
         });
 
@@ -456,7 +617,18 @@ public class MakeService extends Service {
                 wm.removeView(mView);
                 mView = null;
             }
-
+            if(painter != null) {
+                wm.removeView(painter);
+                painter = null;
+            }
+            if(graffitiView != null) {
+                wm.removeView(graffitiView);
+                graffitiView = null;
+            }
+            if(squareView != null) {
+                wm.removeView(squareView);
+                squareView = null;
+            }
             wm = null;
         }
     }

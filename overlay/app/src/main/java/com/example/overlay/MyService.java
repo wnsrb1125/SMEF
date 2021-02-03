@@ -180,7 +180,7 @@ public class MyService extends Service{
         wm.addView(graffitiView,firstparams);
         wm.addView(mView, params);
         mView.setOnTouchListener(mViewTouchListener);
-        graffitiView.setOnTouchListener(graffitiViewTouchListener);
+        //graffitiView.setOnTouchListener(graffitiViewTouchListener);
     }
 
     public void player() {

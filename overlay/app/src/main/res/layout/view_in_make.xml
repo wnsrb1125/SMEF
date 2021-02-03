@@ -3,13 +3,20 @@
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <ToggleButton
+    <Button
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textOn="종료"
-        android:textOff="녹음"
+        android:text="녹음"
         android:id="@+id/bt_rec"
         android:onClick="onToggleClicked"/>
+
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="재녹음"
+        android:id="@+id/bt_rec2"
+        android:onClick="onToggleClicked"
+        android:visibility="gone"/>
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -43,12 +50,12 @@
             android:layout_height="wrap_content"
             android:text="exit" />
 
-        <Button
-            android:id="@+id/bt_current"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="wrap_content"
-            android:text="current" />
     </LinearLayout>
+
+    <Button
+        android:id="@+id/bt_end"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="end" />
 
 </LinearLayout>
