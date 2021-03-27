@@ -25,7 +25,10 @@ public class AsyncUpload extends AsyncTask<Education, Void, Void> {
     private ArrayList<Education> mArrayList = new ArrayList<Education>();
     private int id = 0;
     private String filepath = "";
+    private String name = "";
     private int userid = 0;
+    private int widthPixel = 0;
+    private int heightPixel = 0;
 
 
     @Override
@@ -36,6 +39,19 @@ public class AsyncUpload extends AsyncTask<Education, Void, Void> {
 
     public void setUserid(int userid) {
         this.userid = userid;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+
+    public void setWidth(int widthPixel) {
+        this.widthPixel = widthPixel;
+    }
+
+    public void setHeight(int heightPixel) {
+        this.heightPixel = heightPixel;
     }
 
     public ArrayList<Education> getData() {
@@ -49,9 +65,12 @@ public class AsyncUpload extends AsyncTask<Education, Void, Void> {
         String postParameters = "squares=";
         postParameters += gson.toJson(educations);
         postParameters += "&userid=" + userid;
+        postParameters += "&width=" + widthPixel;
+        postParameters += "&height=" + heightPixel;
+        postParameters += "&content_name='" + name+"'";
         Log.d("dddddddddddddddd",postParameters);
         try {
-            URL url = new URL("http://192.168.0.36/upload.php");
+            URL url = new URL("https://shelper3.azurewebsites.net/upload.php");
             HttpURLConnection httpURLConnection = (HttpURLConnection)url.openConnection();
 
             //httpURLConnection.setReadTimeout(5000);

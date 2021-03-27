@@ -41,9 +41,10 @@ public class MyService extends Service{
     private View mView;
     private View graffitiView;
     private MediaPlayer mediaPlayer;
-    private String media_path = "file:///data/data/com.example.overlay/3/";
+    private String media_path = "file:///data/data/com.example.overlay/";
     private int current_index = 0;
     private Intent passedIntent;
+    private int passedId;
     private float START_X;                    //터치 시작 점
     private float START_Y;                    //터치 시작 점
     private int PREV_X;                            //뷰의 시작 점
@@ -143,11 +144,7 @@ public class MyService extends Service{
         bt_current.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (count == educations_length) {
-                    count--;
-                }
                 player();
-                count++;
             }
         });
 
@@ -196,7 +193,7 @@ public class MyService extends Service{
             wm.addView(painter, params2);
             mediaPlayer = new MediaPlayer();
             try {
-                mediaPlayer.setDataSource(MyService.this, Uri.parse(media_path+count+".m4a"));
+                mediaPlayer.setDataSource(MyService.this, Uri.parse(media_path+passedId+"/"+count+".m4a"));
                 mediaPlayer.prepare();
                 mediaPlayer.start();
 
@@ -205,7 +202,7 @@ public class MyService extends Service{
                 e.printStackTrace();
             }
         }
-        Toast.makeText(getApplicationContext(), "" + count, Toast.LENGTH_SHORT).show();
+
         zero++;
     }
 
@@ -228,6 +225,7 @@ public class MyService extends Service{
     public int onStartCommand(Intent intent, int flags, int startId) {
         passedIntent = intent;
         String result = intent.getStringExtra("edu");
+        passedId = intent.getIntExtra("id",0);
         showResult(result);
         return super.onStartCommand(intent, flags, startId);
     }

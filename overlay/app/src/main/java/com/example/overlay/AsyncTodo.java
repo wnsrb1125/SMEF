@@ -102,6 +102,7 @@ public class AsyncTodo extends AsyncTask<String, Void, String> {
             }
 
 
+            inputStream.close();
             bufferedReader.close();
             httpURLConnection.disconnect();
 
@@ -149,16 +150,15 @@ public class AsyncTodo extends AsyncTask<String, Void, String> {
             }
 
         } catch (JSONException e) {
-
             Log.d(TAG, "showResult : ", e);
         }
         try {
-            a = asyncDownload.execute("http://192.168.0.36/downloadww.php?id="+id+"&filepath="+filepath,""+id).get();
+            a = asyncDownload.execute("https://shelper3.azurewebsites.net/downloadww.php?id="+id+"&filepath="+filepath,""+id).get();
             Log.d("^^^^^^^^^^^^^", a);
         }  catch (Exception e) {
             e.printStackTrace();
             Log.d("err^^^^^^^^^^^^^", a);
         }
-        return mArrayList;
+         return mArrayList;
     }
 }

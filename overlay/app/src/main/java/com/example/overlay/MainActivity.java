@@ -8,7 +8,6 @@ import android.os.Bundle;
 import android.provider.Settings;
 import android.view.View;
 import android.widget.Button;
-import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -21,6 +20,8 @@ public class MainActivity extends AppCompatActivity {
     private static String ID_ADDRESS = "";
     private ArrayList<Education> educations = new ArrayList<Education>();
     private String result;
+    private int id = 21;
+    private String name = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,7 +51,8 @@ public class MainActivity extends AppCompatActivity {
         bt_make.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startMakeServ();
+                Intent intent = new Intent(MainActivity.this,PopupActivity.class);
+                startActivityForResult(intent,123);
             }
         });
 
@@ -61,7 +63,7 @@ public class MainActivity extends AppCompatActivity {
 
                 AsyncTodo task = new AsyncTodo();
                 try {
-                    result = task.execute("http://192.168.0.36/getjson.php?id=3","data").get();
+                    result = task.execute("https://shelper3.azurewebsites.net/getjson.php?id="+id,"sound").get();
                 } catch (ExecutionException e) {
                     e.printStackTrace();
                 } catch (InterruptedException e) {
@@ -80,26 +82,29 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        Button dw_test = (Button) findViewById(R.id.dwtest);
-        dw_test.setOnClickListener(new View.OnClickListener() {
+        Button search = (Button) findViewById(R.id.search_button);
+        search.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(v.getContext(),TestaActivity.class);
                 startActivity(intent);
 
-                //AsyncDownload dw = new AsyncDownload();
-                //dw.execute("http://192.168.0.36/downloadww.php?idarray=[10,11]");
             }
         });
     }
 
+
     private void startServ() {
-        startService(new Intent(MainActivity.this, MyService.class).putExtra("edu", result));
+        Intent intent = new Intent(MainActivity.this, MyService.class);
+        intent.putExtra("edu",result);
+        intent.putExtra("id",id);
+        startService(intent);
     }
 
     private void startMakeServ() {
-        Toast.makeText(getApplicationContext(),"뭐고이고",Toast.LENGTH_SHORT).show();
-        startService(new Intent(MainActivity.this, MakeService.class));
+        Intent intent = new Intent(MainActivity.this, MakeService.class);
+        intent.putExtra("name",name);
+        startService(intent);
     }
 
 
@@ -124,10 +129,13 @@ public class MainActivity extends AppCompatActivity {
         if (requestCode == ACTION_MANAGE_OVERLAY_PERMISSION_REQUEST_CODE) {
             if (!Settings.canDrawOverlays(this)) {
                 // TODO 동의를 얻지 못했을 경우의 처리
-
             } else {
                 startService(new Intent(MainActivity.this, MyService.class));
             }
+        }
+        else if (requestCode == 123) {
+            name = data.getStringExtra("name");
+            startMakeServ();
         }
     }
     void startMain(){

@@ -20,7 +20,9 @@ import android.widget.Toast;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 
 public class MakeService extends Service {
 
@@ -41,8 +43,6 @@ public class MakeService extends Service {
     private View squareView;
     private View graffitiView;
     private MediaPlayer mediaPlayer;
-    private String media_path = "file:///data/data/com.example.overlay/3/";
-    private int current_index = 0;
     private Intent passedIntent;
     private float START_X;                    //터치 시작 점
     private float START_Y;                    //터치 시작 점
@@ -53,9 +53,14 @@ public class MakeService extends Service {
     private int MAX_X = -1, MAX_Y = -1;
     private int onoff = 0;
     private int again = 0;
+    private SimpleDateFormat simpleDateFormat;
+    private Date date;
     private MediaRecorder recorder;
     private File file;
-    private int media_count = 1;
+    private int folder_onoff = 1;
+    private File dir;
+    private String name = "";
+    private long now;
     private WindowManager.LayoutParams params;
     private WindowManager.LayoutParams params2;
     private WindowManager.LayoutParams params3;
@@ -121,10 +126,8 @@ public class MakeService extends Service {
                         addSquareviewInit();
                     }
 
-                    DisplayMetrics dm = getResources().getDisplayMetrics();
-
                     Education education = new Education();
-                    education.setSoundPaint(new Integer[] {1,1,Integer.valueOf((int)START_X2),Integer.valueOf((int)START_Y2),finalX,finalY,dm.widthPixels,dm.heightPixels});
+                    education.setSoundPaint(new Integer[] {1,1,Integer.valueOf((int)START_X2),Integer.valueOf((int)START_Y2),finalX,finalY});
                     if (onoff == 1) {
                         Toast.makeText(getApplicationContext(),count+"",Toast.LENGTH_SHORT).show();
                         educations.set(count,education);
@@ -137,10 +140,6 @@ public class MakeService extends Service {
                     squareView.setOnTouchListener(touchListener);
                     break;
             }
-
-
-
-
             return true;
         }
     };
@@ -161,9 +160,13 @@ public class MakeService extends Service {
     public void onCreate() {
         super.onCreate();
         inflate = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        now = System.currentTimeMillis();
+        simpleDateFormat = new SimpleDateFormat("yyyyMMdd");
+        date = new Date(now);
+
         wm = (WindowManager) getSystemService(WINDOW_SERVICE);
 
-        params = new WindowManager.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 300,
+        params = new WindowManager.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 500,
                 WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
                 WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
                 , PixelFormat.RGB_888);
@@ -196,9 +199,23 @@ public class MakeService extends Service {
         bt_end.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-            AsyncUpload asyncUpload = new AsyncUpload();
-            asyncUpload.setUserid(1);
-            asyncUpload.execute(educations.toArray(new Education[educations.size()]));
+
+                DisplayMetrics dm = getResources().getDisplayMetrics();
+                AsyncUpload asyncUpload = new AsyncUpload();
+                asyncUpload.setUserid(1);
+                asyncUpload.setName(name);
+                asyncUpload.setWidth(dm.widthPixels);
+                asyncUpload.setHeight(dm.heightPixels);
+                asyncUpload.execute(educations.toArray(new Education[educations.size()]));
+                try {
+                    Ziper ziper = new Ziper();
+                    ziper.zipFolder(getApplicationContext().getCacheDir()+"/"+simpleDateFormat.format(date), getApplicationContext().getCacheDir()+"/"+simpleDateFormat.format(date)+".zip");
+                    AsyncFileUpload asyncFileUpload = new AsyncFileUpload();
+                    String[] ex = {getApplicationContext().getCacheDir()+"/"+simpleDateFormat.format(date)+".zip" , "" };
+                    asyncFileUpload.execute(ex);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
         });
 
@@ -211,7 +228,7 @@ public class MakeService extends Service {
                     bt_rec.setText("종료");
                     Toast.makeText(getApplicationContext(),"녹음시작",Toast.LENGTH_SHORT).show();
                     try {
-                        file = File.createTempFile("asdasd"+count,".mp4", getApplicationContext().getCacheDir());
+                        file = File.createTempFile(simpleDateFormat.format(date)+count,".m4a", getApplicationContext().getCacheDir());
                         filename = file.getAbsolutePath();
                     } catch (IOException e) {
                         e.printStackTrace();
@@ -256,8 +273,15 @@ public class MakeService extends Service {
                 } else if(bt_rec.getText().equals("녹음")){
                     bt_rec.setText("종료");
                     Toast.makeText(getApplicationContext(),"녹음시작",Toast.LENGTH_SHORT).show();
+                    if (folder_onoff == 1) {
+                        dir = new File(getApplicationContext().getCacheDir()+"/"+simpleDateFormat.format(date));
+                        if (!dir.exists()) {
+                            dir.mkdirs();
+                        }
+                        folder_onoff = 0;
+                    }
                     try {
-                        file = File.createTempFile("asdasd"+count,".mp4", getApplicationContext().getCacheDir());
+                        file = File.createTempFile(simpleDateFormat.format(date)+count,".m4a", dir);
                         filename = file.getAbsolutePath();
                     } catch (IOException e) {
                         e.printStackTrace();
@@ -278,6 +302,7 @@ public class MakeService extends Service {
                 } else if(bt_rec.getText().equals("재생")) {
                     mediaPlayer = new MediaPlayer();
                     try {
+                        Toast.makeText(getApplicationContext(),filenames.get(count)+"",Toast.LENGTH_SHORT).show();
                         mediaPlayer.setDataSource(filenames.get(count));
                         mediaPlayer.prepare();
                         mediaPlayer.start();
@@ -449,6 +474,7 @@ public class MakeService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         passedIntent = intent;
+        name = intent.getStringExtra("name");
         return super.onStartCommand(intent, flags, startId);
     }
 
@@ -609,9 +635,31 @@ public class MakeService extends Service {
             }
         });
     }
+    private void clearCache() {
+        final File cacheDirFile = getApplicationContext().getCacheDir();
+        if (null != cacheDirFile && cacheDirFile.isDirectory()) {
+            clearSubCacheFiles(cacheDirFile);
+        }
+    }
+    private void clearSubCacheFiles(File cacheDirFile) {
+        if (null == cacheDirFile || cacheDirFile.isFile()) {
+            return;
+        }
+        for (File cacheFile : cacheDirFile.listFiles()) {
+            if (cacheFile.isFile()) {
+                if (cacheFile.exists()) {
+                    cacheFile.delete();
+                }
+            } else {
+                clearSubCacheFiles(cacheFile);
+            }
+        }
+    }
+
     @Override
     public void onDestroy() {
         super.onDestroy();
+        clearCache();
         if(wm != null) {
             if(mView != null) {
                 wm.removeView(mView);

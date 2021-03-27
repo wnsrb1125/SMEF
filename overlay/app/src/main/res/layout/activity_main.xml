@@ -69,12 +69,24 @@
         app:layout_constraintBottom_toTopOf="@+id/bt_stop"
         tools:layout_editor_absoluteX="161dp" />
 
-    <Button
-        android:id="@+id/dwtest"
-        android:layout_width="match_parent"
+    <EditText
+        android:id="@+id/editText2"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="8dp"
-        android:text="test"
-        app:layout_constraintBottom_toTopOf="@+id/dbbutton" />
+        app:layout_constraintBottom_toTopOf="@+id/dbbutton"
+        tools:ignore="MissingConstraints"
+        android:hint="검색어를 입력하세요."/>
+
+    <Button
+        android:id="@+id/search_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginLeft="8dp"
+        android:layout_marginBottom="8dp"
+        android:text="search"
+        app:layout_constraintBottom_toTopOf="@+id/dbbutton"
+        app:layout_constraintStart_toEndOf="@+id/editText2" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -32,6 +32,7 @@ public class AsyncDownload extends AsyncTask<String,Void,String> {
             HttpURLConnection httpURLConnection = (HttpURLConnection)url.openConnection();
 
             httpURLConnection.setRequestMethod("POST");
+            httpURLConnection.setRequestProperty("Accept-Encoding","Identity");
             httpURLConnection.connect();
 
 //            OutputStream outputStream = httpURLConnection.getOutputStream();
@@ -52,7 +53,9 @@ public class AsyncDownload extends AsyncTask<String,Void,String> {
                 inputStream = httpURLConnection.getErrorStream();
             }
 
+
             int nLen = httpURLConnection.getContentLength();
+            Log.d("!@#%$",nLen+"");
             byte[] bytes = new byte[nLen];
 
             File voice = new File("data/data/com.example.overlay/"+zipname);
@@ -66,7 +69,6 @@ public class AsyncDownload extends AsyncTask<String,Void,String> {
                     break;
                 fos.write(bytes,0,read);
             }
-
 
             inputStream.close();
             fos.close();
