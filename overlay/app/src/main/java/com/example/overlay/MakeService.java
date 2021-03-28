@@ -465,7 +465,7 @@ public class MakeService extends Service {
         Intent i = new Intent();
         i.setAction(Intent.ACTION_MAIN);
         i.addCategory(Intent.CATEGORY_HOME);
-        startActivity(i);
+        startActivity(i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
         wm.addView(mView, params);
         mView.setOnTouchListener(mViewTouchListener);
         squareView.setOnTouchListener(touchListener);

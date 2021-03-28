@@ -26,6 +26,8 @@
             </intent-filter>
         </activity>
         <activity android:name=".TestaActivity"/>
+        <activity android:name=".SearchActivity"/>
+        <activity android:name=".LoadingActivity" android:theme="@android:style/Theme.NoTitleBar.Fullscreen"/>
         <activity android:name=".PopupActivity" android:theme="@android:style/Theme.DeviceDefault.Light.Dialog"/>
         <service
             android:name=".MyService"

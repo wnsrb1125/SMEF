@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.provider.Settings;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -17,11 +18,12 @@ import java.util.concurrent.ExecutionException;
 public class MainActivity extends AppCompatActivity {
 
     private static final int ACTION_MANAGE_OVERLAY_PERMISSION_REQUEST_CODE = 1;
-    private static String ID_ADDRESS = "";
-    private ArrayList<Education> educations = new ArrayList<Education>();
     private String result;
+    private String result2;
+    private String search_word;
     private int id = 21;
     private String name = "";
+    private ArrayList<ListViewList> arrayList = new ArrayList<ListViewList>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -82,17 +84,24 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        Button search = (Button) findViewById(R.id.search_button);
+        final EditText editText = findViewById(R.id.editText2);
+        final Button search = (Button) findViewById(R.id.search_button);
         search.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(v.getContext(),TestaActivity.class);
+                AsyncSearch asyncSearch = new AsyncSearch();
+                search_word = editText.getText().toString();
+                try {
+                    result2 = asyncSearch.execute(search_word).get();
+                }catch (Exception e) {
+                    e.printStackTrace();
+                }
+                Intent intent = new Intent(MainActivity.this,SearchActivity.class);
+                intent.putExtra("search_result",result2);
                 startActivity(intent);
-
             }
         });
     }
-
 
     private void startServ() {
         Intent intent = new Intent(MainActivity.this, MyService.class);

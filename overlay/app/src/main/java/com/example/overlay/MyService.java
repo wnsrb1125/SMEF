@@ -32,9 +32,12 @@ public class MyService extends Service{
 
     private int educations_length;
     private ArrayList<Education> educations = new ArrayList<Education>();
+    private AsyncDownload asyncDownload = new AsyncDownload();
     private int count = 0;
     private int zero = 0;
+    private String filepath = "sound";
     private Integer[] a = {11,65,180,75,190};
+    private String t = "";
     private Painter painter;
     private Education education;
     private WindowManager wm;
@@ -110,13 +113,13 @@ public class MyService extends Service{
 
         firstparams = new WindowManager.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,LinearLayout.LayoutParams.MATCH_PARENT,
                 WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
-                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,PixelFormat.TRANSLUCENT);
+                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE|
+                        WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,PixelFormat.TRANSLUCENT);
 
         params = new WindowManager.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 100,
                 WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
                 WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
                 ,PixelFormat.RGB_888);
-
 
         params2 = new WindowManager.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,LinearLayout.LayoutParams.MATCH_PARENT,
                 WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
@@ -173,7 +176,7 @@ public class MyService extends Service{
         Intent i = new Intent();
         i.setAction(Intent.ACTION_MAIN);
         i.addCategory(Intent.CATEGORY_HOME);
-        startActivity(i);
+        startActivity(i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
         wm.addView(graffitiView,firstparams);
         wm.addView(mView, params);
         mView.setOnTouchListener(mViewTouchListener);
@@ -255,7 +258,7 @@ public class MyService extends Service{
 
 
 
-                int id = item.getInt("id");
+                int id = item.getInt("contentsid");
 
                 square[0] = item.getInt("thick");
                 square[1] = item.getInt("color");
@@ -268,16 +271,27 @@ public class MyService extends Service{
 
                 Log.d("@################", Arrays.toString(square));
                 Education education = new Education();
-
                 education.setSoundPaint(square);
 
                 educations.add(education);
                 Log.d("*****************", String.valueOf(width_percent)+height_percent);
 
+                try {
+
+                }catch (Exception e) {
+                    e.printStackTrace();
+                }
+                try {
+                    t = asyncDownload.execute("https://shelper3.azurewebsites.net/downloadww.php?id="+id+"&filepath="+filepath,""+id).get();
+                    Log.d("^^^^^^^^^^^^^", t);
+                }catch (Exception e) {
+                    e.printStackTrace();
+                    Log.d("err^^^^^^^^^^^^^", t);
+                }
+
             }
 
         } catch (JSONException e) {
-
             Log.d(TAG, "showResult : ", e);
         }
         educations_length = educations.size();
