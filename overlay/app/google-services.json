@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "373100883044",
+    "project_id": "shelper2",
+    "storage_bucket": "shelper2.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:373100883044:android:9f09fa50489eadb043c371",
+        "android_client_info": {
+          "package_name": "com.shelper.overlay"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "373100883044-ub39bteu6c9b2v80lc41lmvr25cjlq0t.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.shelper.overlay",
+            "certificate_hash": "f5a0c228b05084d17d40819a5f09afa222e83b54"
+          }
+        },
+        {
+          "client_id": "373100883044-pclr2p014ce94fh1g54v6tvbrt2gvb7q.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAi9QfV2eTjCkGqxOKoMf8BKGp4Dtsn1qs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "373100883044-pclr2p014ce94fh1g54v6tvbrt2gvb7q.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

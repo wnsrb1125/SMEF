@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="standard_5">5dp</dimen>
+    <dimen name="standard_21">5dp</dimen>
+    <dimen name="standard_30">40dp</dimen>
+    <dimen name="standard_45">40dp</dimen>
+    <dimen name="standard_55">55dp</dimen>
+    <dimen name="standard_105">105dp</dimen>
+    <dimen name="standard_155">155dp</dimen>
+    <dimen name="standard_205">205dp</dimen>
+    <dimen name="standard_255">255dp</dimen>
+    <dimen name="standard_305">305dp</dimen>
+    <dimen name="standard_50">50dp</dimen>
+    <dimen name="standard_95">95dp</dimen>
+    <dimen name="standard_140">140dp</dimen>
+    <dimen name="standard_185">185dp</dimen>
+    <dimen name="standard_230">230dp</dimen>
+    <dimen name="standard_275">275dp</dimen>
+    <dimen name="standard_320">320dp</dimen>
+    <dimen name="standard_355">355dp</dimen>
+</resources>

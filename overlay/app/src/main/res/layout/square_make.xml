@@ -1,47 +1,62 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical" android:layout_width="match_parent"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:id="@+id/layout">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:theme="@style/att"
+    android:id="@+id/square_layout">
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_vertical">
-        <Button
-            android:id="@+id/bt_color"
-            android:layout_width="0dp"
-            android:layout_weight="1"
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="300dp"
+        android:layout_height="match_parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:id="@+id/fab_thick"
+            android:layout_width="@dimen/standard_45"
+            android:layout_height="@dimen/standard_45"
+            android:layout_margin="@dimen/standard_21"
+            app:fabSize="mini"
+            android:src="@drawable/ic_mode_edit_black_24dp"/>
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:id="@+id/fab_delete"
+            android:layout_width="@dimen/standard_45"
+            android:layout_height="@dimen/standard_45"
+            android:layout_margin="@dimen/standard_21"
+            app:fabSize="mini"
+            android:src="@drawable/ic_delete_black_24dp"/>
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:id="@+id/fab_confirm"
+            android:layout_width="@dimen/standard_45"
+            android:layout_height="@dimen/standard_45"
+            android:layout_margin="@dimen/standard_21"
+            app:fabSize="mini"
+            android:src="@drawable/ic_check_black_24dp"/>
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:id="@+id/fab_color"
+            android:layout_width="@dimen/standard_45"
+            android:layout_height="@dimen/standard_45"
+            android:layout_margin="@dimen/standard_21"
+            app:fabSize="mini"
+            android:src="@drawable/ic_color_lens_black_24dp"/>
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:id="@+id/fab_menu3"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="color" />
+            android:src="@drawable/ic_add_black_24dp"/>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
-        <Button
-            android:id="@+id/bt_back"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="wrap_content"
-            android:text="back" />
 
-        <Button
-            android:id="@+id/bt_thick"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="wrap_content"
-            android:text="thick" />
-
-        <Button
-            android:id="@+id/bt_confirm"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="wrap_content"
-            android:text="confirm" />
-
-        <Button
-            android:id="@+id/bt_delete"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="wrap_content"
-            android:text="delete" />
-
-    </LinearLayout>
-</LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

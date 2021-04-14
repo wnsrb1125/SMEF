@@ -17,24 +17,6 @@
         app:layout_constraintTop_toBottomOf="@+id/textView2"
         tools:layout_editor_absoluteX="8dp" />
 
-    <Button
-        android:id="@+id/bt_start"
-        android:layout_width="368dp"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/textView"
-        android:layout_alignParentLeft="true"
-        android:layout_marginStart="8dp"
-        android:layout_marginLeft="8dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginRight="8dp"
-        android:layout_marginBottom="8dp"
-        android:src="@mipmap/ic_launcher"
-        android:text="click"
-        android:textColor="#ffffff"
-        app:layout_constraintBottom_toTopOf="@+id/textView2"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
-
 
     <TextView
         android:id="@+id/textView2"
@@ -46,35 +28,12 @@
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <Button
-        android:id="@+id/bt_stop"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginLeft="8dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginRight="8dp"
-        android:layout_marginBottom="8dp"
-        android:text="Button"
-        app:layout_constraintBottom_toTopOf="@+id/bt_start"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="@+id/bt_start" />
-
-    <Button
-        android:id="@+id/dbbutton"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
-        android:text="Button"
-        app:layout_constraintBottom_toTopOf="@+id/bt_stop"
-        tools:layout_editor_absoluteX="161dp" />
-
     <EditText
         android:id="@+id/editText2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="8dp"
-        app:layout_constraintBottom_toTopOf="@+id/dbbutton"
+        app:layout_constraintBottom_toTopOf="@+id/textView2"
         tools:ignore="MissingConstraints"
         android:hint="검색어를 입력하세요."/>
 
@@ -86,7 +45,7 @@
         android:layout_marginLeft="8dp"
         android:layout_marginBottom="8dp"
         android:text="search"
-        app:layout_constraintBottom_toTopOf="@+id/dbbutton"
+        app:layout_constraintBottom_toBottomOf="@id/editText2"
         app:layout_constraintStart_toEndOf="@+id/editText2" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
