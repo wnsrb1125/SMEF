@@ -9,7 +9,6 @@
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
 
     <application
-        android:usesCleartextTraffic="true"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
@@ -33,6 +32,16 @@
                 <data
                     android:host="blog.naver.com/wnsrb0147"
                     android:scheme="https" />
+            </intent-filter>
+        </activity>
+        <activity android:name="com.kakao.sdk.auth.AuthCodeHandlerActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data android:host="ouath"
+                    android:scheme="kakao{a404b66a2cf6ce41ce86c61ee1b5b545}" />
             </intent-filter>
         </activity>
         <activity android:name="com.shelper.overlay.TestaActivity"/>

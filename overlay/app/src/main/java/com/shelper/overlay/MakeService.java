@@ -7,6 +7,7 @@ import android.graphics.PixelFormat;
 import android.graphics.Point;
 import android.media.MediaPlayer;
 import android.media.MediaRecorder;
+import android.os.Build;
 import android.os.IBinder;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -29,6 +30,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.concurrent.ExecutionException;
 
 public class MakeService extends Service {
 
@@ -37,7 +39,6 @@ public class MakeService extends Service {
     private ArrayList<String> filenames = new ArrayList<String>();
     private String filename;
     private int count = 0;
-    private int zero = 0;
     LayoutInflater inflate;
     private Integer[] draw;
     private Painter painter;
@@ -91,6 +92,7 @@ public class MakeService extends Service {
     private Point size;
     private int biggestValue = 0;
     private boolean confirmChcker = false;
+    private int FLAG;
 
 
     private View.OnTouchListener touchListener = new View.OnTouchListener() {
@@ -171,17 +173,23 @@ public class MakeService extends Service {
         size = new Point();
         display.getSize(size);
 
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            FLAG = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
+        } else {
+            FLAG = WindowManager.LayoutParams.TYPE_PHONE;
+        }
+
         params2 = new WindowManager.LayoutParams(WindowManager.LayoutParams.WRAP_CONTENT,WindowManager.LayoutParams.WRAP_CONTENT,
-                WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
+                FLAG,
                 WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,PixelFormat.TRANSLUCENT);
 
         params3 = new WindowManager.LayoutParams(WindowManager.LayoutParams.MATCH_PARENT,WindowManager.LayoutParams.MATCH_PARENT,
-                WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
+                FLAG,
                 WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
                 ,PixelFormat.TRANSLUCENT);
 
         params4 = new WindowManager.LayoutParams(WindowManager.LayoutParams.MATCH_PARENT,WindowManager.LayoutParams.MATCH_PARENT,
-                WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
+                FLAG,
                 WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE| WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
                 ,PixelFormat.TRANSLUCENT);
 
@@ -303,6 +311,7 @@ public class MakeService extends Service {
             @Override
             public void onClick(View v) {
                 if (count > 0 ) {
+                    again = 0;
                     if(fileMap.containsKey(count) && painterMap.containsKey(count)) {
                         Toast.makeText(getApplicationContext(),"뒤로 가기.",Toast.LENGTH_SHORT).show();
                     } else {
@@ -316,6 +325,7 @@ public class MakeService extends Service {
                     count--;
                     fab_play.setVisibility(View.INVISIBLE);
                     if(count < educations.size()) {
+                        again = 1;
                         if (painter != null) {
                             wm.removeView(mView);
                             wm.removeView(painter);
@@ -340,6 +350,7 @@ public class MakeService extends Service {
             @Override
             public void onClick(View v) {
                 if (fileMap.containsKey(count) && painterMap.containsKey(count)) {
+                    again = 0;
                     count++;
                     if (biggestValue < count) {
                         biggestValue = count;
@@ -347,6 +358,7 @@ public class MakeService extends Service {
                     fab_play.setVisibility(View.INVISIBLE);
                     Log.d("errorfind", count + "/" + educations.size() + "");
                     if (painter != null && count < educations.size()) {
+                        again = 1;
                         wm.removeView(painter);
                         painter = null;
                         wm.removeView(mView);
@@ -386,11 +398,16 @@ public class MakeService extends Service {
                         if (again == 0) {
                             files.add(file);
                             filenames.add(filename);
+                            again = 1;
                         }
                         else {
+                            Log.d("filename",filenames.get(count));
+                            File file = new File(filenames.get(count));
+                            if (file.exists()) {
+                                file.delete();
+                            }
                             files.set(count,file);
                             filenames.set(count,filename);
-                            again = 0;
                         }
                         if (!fileMap.containsKey(count)) {
                             fileMap.put(count,true);
@@ -459,21 +476,32 @@ public class MakeService extends Service {
             public void onClick(View v) {
                 if (painterMap.containsKey(biggestValue) && fileMap.containsKey(biggestValue)) {
                     DisplayMetrics dm = getResources().getDisplayMetrics();
+                    try {
+                        Ziper ziper = new Ziper();
+                        ziper.zipFolder(getApplicationContext().getCacheDir() + "/" + simpleDateFormat.format(date), getApplicationContext().getCacheDir() + "/" + simpleDateFormat.format(date) + ".zip");
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                     AsyncUpload asyncUpload = new AsyncUpload();
                     asyncUpload.setUserid(1);
                     asyncUpload.setName(name);
                     asyncUpload.setWidth(dm.widthPixels);
                     asyncUpload.setHeight(dm.heightPixels);
-                    asyncUpload.execute(educations.toArray(new Education[educations.size()]));
                     try {
-                        Ziper ziper = new Ziper();
-                        ziper.zipFolder(getApplicationContext().getCacheDir() + "/" + simpleDateFormat.format(date), getApplicationContext().getCacheDir() + "/" + simpleDateFormat.format(date) + ".zip");
+                        asyncUpload.execute(educations.toArray(new Education[educations.size()])).get();
+                    } catch (ExecutionException e) {
+                        e.printStackTrace();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    try {
                         AsyncFileUpload asyncFileUpload = new AsyncFileUpload();
                         String[] ex = {getApplicationContext().getCacheDir() + "/" + simpleDateFormat.format(date) + ".zip", ""};
                         Boolean TF = asyncFileUpload.execute(ex).get();
-                        if (TF) {
+                        if(TF) {
                             stopService(passedIntent);
                         }
+
                     } catch (Exception e) {
                         e.printStackTrace();
                     }

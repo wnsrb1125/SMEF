@@ -7,6 +7,7 @@ import android.graphics.PixelFormat;
 import android.graphics.Point;
 import android.media.MediaPlayer;
 import android.net.Uri;
+import android.os.Build;
 import android.os.IBinder;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -61,6 +62,7 @@ public class MyService extends Service{
     private FloatingActionButton fab_close;
     private MediaPlayer MotoMediaPlayer = null;
     private boolean isFabOpen;
+    private int FLAG;
 
     @Override
     public IBinder onBind(Intent intent) { return null; }
@@ -73,13 +75,18 @@ public class MyService extends Service{
         Display display = wm.getDefaultDisplay();
         final Point size = new Point();
         display.getSize(size);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            FLAG = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
+        } else {
+            FLAG = WindowManager.LayoutParams.TYPE_PHONE;
+        }
         paramsk = new WindowManager.LayoutParams(WindowManager.LayoutParams.WRAP_CONTENT, WindowManager.LayoutParams.WRAP_CONTENT,
-                WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
+                FLAG,
                 WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
                 ,PixelFormat.TRANSLUCENT);
 
         params2 = new WindowManager.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,LinearLayout.LayoutParams.MATCH_PARENT,
-                WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
+                FLAG,
                 WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE|
                 WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,PixelFormat.TRANSLUCENT);
 

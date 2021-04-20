@@ -28,12 +28,12 @@ public class AsyncFileUpload extends AsyncTask<String,Void,Boolean> {
     private int userid = 1;
     private File file;
     private Context CacheDeleteContext;
+    int serverResponseCode = 0;
 
 
     @Override
     protected Boolean doInBackground(String[] postParameters) {
         try {
-
             String filename = postParameters[0];
             File file = new File(filename);
             URL url = new URL("http://shelper3.azurewebsites.net/uploadFile.php?userid="+userid);
@@ -43,21 +43,23 @@ public class AsyncFileUpload extends AsyncTask<String,Void,Boolean> {
             int bytesRead, bytesAvailable, bufferSize;
             byte[] buffer;
             int maxBufferSize = 10 * 1024 * 1024;
+            InputStream inputStream = new FileInputStream(file);
 
             HttpURLConnection httpURLConnection = (HttpURLConnection)url.openConnection();
 
-            //httpURLConnection.setReadTimeout(5000);
-            //httpURLConnection.setConnectTimeout(5000);
+            //httpURLConnection.setReadTimeout(10000);
+            //httpURLConnection.setConnectTimeout(10000);
             httpURLConnection.setRequestMethod("POST");
+            httpURLConnection.setUseCaches(false);
             httpURLConnection.setDoInput(true);
             httpURLConnection.setDoOutput(true);
+            httpURLConnection.setRequestProperty("ENCTYPE", "multipart/form-data");
             httpURLConnection.setRequestProperty("Connection","Keep-Alive");
-            httpURLConnection.setRequestProperty("ENCTYPE","multipart/form-data");
             httpURLConnection.setRequestProperty("Content-Type", "multipart/form-data;boundary=" + boundary);
             httpURLConnection.setRequestProperty("uploaded_file", filename);
 
-            InputStream inputStream = new FileInputStream(file);
             DataOutputStream dos = new DataOutputStream(httpURLConnection.getOutputStream());
+
 
             dos.writeBytes(twoHyphens + boundary + lineEnd);
             dos.writeBytes("Content-Disposition: form-data; name=\"uploaded_file\";filename=\"" + filename + "\"" + lineEnd);
@@ -67,24 +69,31 @@ public class AsyncFileUpload extends AsyncTask<String,Void,Boolean> {
 
             bufferSize = Math.min(bytesAvailable, maxBufferSize);
             buffer = new byte[bufferSize];
+
             bytesRead = inputStream.read(buffer, 0, bufferSize);
             while (bytesRead > 0) {
-
                 dos.write(buffer, 0, bufferSize);
                 bytesAvailable = inputStream.available();
                 bufferSize = Math.min(bytesAvailable, maxBufferSize);
                 bytesRead = inputStream.read(buffer, 0, bufferSize);
-
             }
 
             // send multipart form data necesssary after file data...
             dos.writeBytes(lineEnd);
             dos.writeBytes(twoHyphens + boundary + twoHyphens + lineEnd);
 
+
             inputStream.close();
             dos.flush();
             dos.close();
-            httpURLConnection.disconnect();
+
+            serverResponseCode = httpURLConnection.getResponseCode();
+
+            String serverResponseMessage = httpURLConnection.getResponseMessage();
+
+            Log.i("uploadFile", "HTTP Response is : "
+                    + serverResponseMessage + ": " + serverResponseCode);
+
 
         }catch (Exception e) {
             Log.d(TAG, "InsertData: Error ", e);

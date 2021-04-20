@@ -3,6 +3,7 @@ package com.shelper.overlay;
 import android.Manifest;
 import android.annotation.TargetApi;
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
@@ -24,6 +25,8 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.dynamiclinks.FirebaseDynamicLinks;
 import com.google.firebase.dynamiclinks.PendingDynamicLinkData;
+import com.kakao.sdk.common.KakaoSdk;
+import com.kakao.sdk.user.UserApiClient;
 
 import java.util.concurrent.ExecutionException;
 
@@ -42,14 +45,13 @@ public class MainActivity extends AppCompatActivity {
     private String resultt = "";
 
 
-
-
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {   // 마시멜로우 이상일 경우
+        KakaoSdk.init(this, "ta404b66a2cf6ce41ce86c61ee1b5b545");
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {   // 마시멜로우 이상일 경우
             if (!Settings.canDrawOverlays(this)) {              // 체크
                 Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
                         Uri.parse("package:" + getPackageName())).putExtra("edu", result);
@@ -62,7 +64,7 @@ public class MainActivity extends AppCompatActivity {
         };
         permission1 = ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO);
         permission2 = ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
-        if(permission1 == PackageManager.PERMISSION_DENIED || permission2 == PackageManager.PERMISSION_DENIED) {
+        if (permission1 == PackageManager.PERMISSION_DENIED || permission2 == PackageManager.PERMISSION_DENIED) {
             ActivityCompat.requestPermissions(MainActivity.this, PERMISSIONS, REQ_PERMISSION);
         }
 
@@ -73,8 +75,8 @@ public class MainActivity extends AppCompatActivity {
         bt_make.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(MainActivity.this,PopupActivity.class);
-                startActivityForResult(intent,123);
+                Intent intent = new Intent(MainActivity.this, PopupActivity.class);
+                startActivityForResult(intent, 123);
             }
         });
 
@@ -88,11 +90,11 @@ public class MainActivity extends AppCompatActivity {
                 search_word = editText.getText().toString();
                 try {
                     result2 = asyncSearch.execute(search_word).get();
-                }catch (Exception e) {
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
-                Intent intent = new Intent(MainActivity.this,SearchActivity.class);
-                intent.putExtra("search_result",result2);
+                Intent intent = new Intent(MainActivity.this, SearchActivity.class);
+                intent.putExtra("search_result", result2);
                 startActivity(intent);
             }
         });
@@ -101,14 +103,14 @@ public class MainActivity extends AppCompatActivity {
 
     private void startServ() {
         Intent intent = new Intent(MainActivity.this, MyService.class);
-        intent.putExtra("edu",result);
-        intent.putExtra("id",id);
+        intent.putExtra("edu", result);
+        intent.putExtra("id", id);
         startService(intent);
     }
 
     private void startMakeServ() {
         Intent intent = new Intent(MainActivity.this, MakeService.class);
-        intent.putExtra("name",name);
+        intent.putExtra("name", name);
         startService(intent);
     }
 
@@ -128,8 +130,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-
-
     @TargetApi(Build.VERSION_CODES.M)
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -147,21 +147,27 @@ public class MainActivity extends AppCompatActivity {
                 startMakeServ();
                 break;
             case REQ_PERMISSION:
-                if (permission1 == PackageManager.PERMISSION_GRANTED && permission2 == PackageManager.PERMISSION_GRANTED ) {
+                if (permission1 == PackageManager.PERMISSION_GRANTED && permission2 == PackageManager.PERMISSION_GRANTED) {
 
                 } else {
-                    Toast.makeText(this,"권한 동의 거부시 사용이 불가합니다.",Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "권한 동의 거부시 사용이 불가합니다.", Toast.LENGTH_SHORT).show();
                 }
                 break;
         }
     }
-    void startMain(){
+
+    private void kakaoLogin(Context context) {
+        UserApiClient.getInstance().isKakaoTalkLoginAvailable(context);
+
+    }
+    void startMain() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             startForegroundService(new Intent(this, MainActivity.class));
         } else {
             startService(new Intent(this, MainActivity.class));
         }
     }
+
     private void handleDeepLink() {
         FirebaseDynamicLinks.getInstance()
                 .getDynamicLink(getIntent())
@@ -179,15 +185,15 @@ public class MainActivity extends AppCompatActivity {
                         Log.d("segment", segment);
                         AsyncTodo task = new AsyncTodo();
                         try {
-                            resultt = task.execute("https://shelper3.azurewebsites.net/getjson.php?id="+deepLink.getQueryParameter("tt"),"sound").get();
+                            resultt = task.execute("https://shelper3.azurewebsites.net/getjson.php?id=" + deepLink.getQueryParameter("tt"), "sound").get();
                         } catch (ExecutionException e) {
                             e.printStackTrace();
                         } catch (InterruptedException e) {
                             e.printStackTrace();
                         }
                         Intent intent = new Intent(MainActivity.this, MyService.class);
-                        intent.putExtra("edu",resultt);
-                        intent.putExtra("id",id);
+                        intent.putExtra("edu", resultt);
+                        intent.putExtra("id", id);
                         startService(intent);
                     }
                 })
