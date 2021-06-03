@@ -185,7 +185,7 @@ public class MakeService2 extends Service {
         fab_next = mView.findViewById(R.id.fab_next2);
         fab_close = mView.findViewById(R.id.fab_cancel2);
         fab_rec = mView.findViewById(R.id.fab_rec);
-        fab_end = mView.findViewById(R.id.fab_end);
+//        fab_time = mView.findViewById(R.id.fab_end);
         fab_lock = mView.findViewById(R.id.fab_lock);
         fab_play = mView.findViewById(R.id.fab_play);
 

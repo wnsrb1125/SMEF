@@ -8,7 +8,9 @@ import android.graphics.Point;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Build;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Looper;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Display;
@@ -20,6 +22,7 @@ import android.view.View;
 import android.view.ViewTreeObserver;
 import android.view.WindowManager;
 import android.widget.LinearLayout;
+import android.widget.Toast;
 
 import androidx.constraintlayout.widget.ConstraintLayout;
 
@@ -35,7 +38,7 @@ import java.util.Arrays;
 
 import static android.content.ContentValues.TAG;
 
-public class MyService extends Service{
+public class MyService extends Service {
 
     private int educations_length;
     private ArrayList<Education> educations = new ArrayList<Education>();
@@ -47,11 +50,10 @@ public class MyService extends Service{
     private Education education;
     private WindowManager wm;
     private View mView;
-    private MediaPlayer mediaPlayer;
     private String media_path = "file:///data/data/com.shelper.overlay/";
-    private int current_index = 0;
     private Intent passedIntent;
     private int passedId;
+    private int contents_id;
     private int mWidth;
     private WindowManager.LayoutParams params2;
     private WindowManager.LayoutParams paramsk;
@@ -60,9 +62,13 @@ public class MyService extends Service{
     private FloatingActionButton fab_next;
     private FloatingActionButton fab_again;
     private FloatingActionButton fab_close;
+    private FloatingActionButton fab_play;
     private MediaPlayer MotoMediaPlayer = null;
     private boolean isFabOpen;
     private int FLAG;
+    private boolean ofswitch = true;
+    private String edu_result;
+
 
     @Override
     public IBinder onBind(Intent intent) { return null; }
@@ -98,6 +104,7 @@ public class MyService extends Service{
         fab_next = mView.findViewById(R.id.fab_next);
         fab_again = mView.findViewById(R.id.fab_current);
         fab_close = mView.findViewById(R.id.fab_cancel);
+        fab_play = mView.findViewById(R.id.fab_playing);
         final ConstraintLayout constraintLayout = mView.findViewById(R.id.service_view);
         gestureDetector = new GestureDetector(this,new SingleTapConfirm());
         ViewTreeObserver vto = constraintLayout.getViewTreeObserver();
@@ -177,6 +184,9 @@ public class MyService extends Service{
             @Override
             public void onClick(View v) {
                 if (count > 0) {
+                    if (MotoMediaPlayer.isPlaying()) {
+                        MotoMediaPlayer.stop();
+                    }
                     count--;
                     player();
                 }
@@ -187,9 +197,30 @@ public class MyService extends Service{
             @Override
             public void onClick(View v) {
                 if (count < educations_length - 1) {
+                    if (MotoMediaPlayer.isPlaying()) {
+                        MotoMediaPlayer.stop();
+                    }
                     count++;
                     player();
                 }
+            }
+        });
+
+        fab_play.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (MotoMediaPlayer.isPlaying()) {
+                    MotoMediaPlayer.stop();
+                }
+               if (ofswitch) {
+                   ofswitch = false;
+                   fab_play.setImageResource(R.drawable.ic_play_arrow_black_24dp);
+               }
+               else {
+                   ofswitch = true;
+                   fab_play.setImageResource(R.drawable.ic_baseline_pause_24);
+                   player();
+               }
             }
         });
 
@@ -203,12 +234,17 @@ public class MyService extends Service{
         showFab();
     }
 
+    public void autoplaying() {
+
+    }
     public void showFab() {
         isFabOpen=true;
         fab_close.animate().translationX(-getResources().getDimension(R.dimen.standard_55));
-        fab_before.animate().translationX(-getResources().getDimension(R.dimen.standard_205));
         fab_next.animate().translationX(-getResources().getDimension(R.dimen.standard_105));
         fab_again.animate().translationX(-getResources().getDimension(R.dimen.standard_155));
+        fab_before.animate().translationX(-getResources().getDimension(R.dimen.standard_205));
+        fab_play.animate().translationX(-getResources().getDimension(R.dimen.standard_255));
+
     }
 
     public void closeFab() {
@@ -217,9 +253,9 @@ public class MyService extends Service{
         fab_close.animate().translationX(0);
         fab_before.animate().translationX(0);
         fab_next.animate().translationX(0);
+        fab_play.animate().translationX(0);
     }
     public void player() {
-
         if (painter != null && count != educations_length) {
             wm.removeView(painter);
         }
@@ -240,21 +276,60 @@ public class MyService extends Service{
                 MotoMediaPlayer = new MediaPlayer();
             }
             try {
-                MotoMediaPlayer.setDataSource(MyService.this, Uri.parse(media_path+passedId+"/"+count+".m4a"));
+                MotoMediaPlayer.setDataSource(MyService.this, Uri.parse(media_path+contents_id+"/"+count+".m4a"));
                 MotoMediaPlayer.prepare();
                 MotoMediaPlayer.start();
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
+        if (ofswitch) {
+            Handler handler = new Handler();
+            handler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    while (MotoMediaPlayer.isPlaying()) {
+
+                    }
+                    fab_next.performClick();
+                }
+            }, 3000);
+        }
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         passedIntent = intent;
-        String result = intent.getStringExtra("edu");
-        passedId = intent.getIntExtra("id",0);
-        showResult(result);
+        if (intent.hasExtra("contents_id")) {
+            contents_id = intent.getIntExtra("contents_id",0);
+        }
+        if (intent.hasExtra("id")) {
+            passedId = intent.getIntExtra("id",0);
+        }
+        edu_result = intent.getStringExtra("edu");
+        showResult(edu_result);
+//        final Handler handler = new Handler(Looper.getMainLooper());
+//        Runnable runnable = new Runnable() {
+//            @Override
+//            public void run() {
+//                while (ofswitch) {
+//                    Log.d("threadtt",count+":"+educations_length);
+//                    if (count < educations_length - 1) {
+//                        player();
+//                        count++;
+//                    }
+//                    else {
+//                        break;
+//                    }
+//                    try {
+//                        Thread.sleep(3000);
+//                    } catch (InterruptedException e) {
+//                        e.printStackTrace();
+//                    }
+//                }
+//            }
+//        };
+//        handler.postDelayed(runnable,0);
         return super.onStartCommand(intent, flags, startId);
     }
 
@@ -285,6 +360,7 @@ public class MyService extends Service{
 
 
                 int id = item.getInt("contentsid");
+                contents_id = id;
 
                 square[0] = item.getInt("thick");
                 square[1] = item.getInt("color");
@@ -295,7 +371,7 @@ public class MyService extends Service{
                 square[6] = item.getInt("width");
                 square[7] = item.getInt("height");
 
-                Log.d("@################", Arrays.toString(square));
+                Log.d("@################", id+"");
                 Education education = new Education();
                 education.setSoundPaint(square);
 
@@ -303,14 +379,9 @@ public class MyService extends Service{
                 Log.d("*****************", String.valueOf(width_percent)+height_percent);
 
                 try {
-
-                }catch (Exception e) {
-                    e.printStackTrace();
-                }
-                try {
                     AsyncDownload asyncDownload = new AsyncDownload();
                     t = asyncDownload.execute("https://shelper3.azurewebsites.net/downloadww.php?id="+id+"&filepath="+filepath,""+id).get();
-                    Log.d("^^^^^^^^^^^^^", t);
+                    Log.d("download",t);
                 }catch (Exception e) {
                     e.printStackTrace();
                     Log.d("err^^^^^^^^^^^^^", t);
@@ -340,6 +411,8 @@ public class MyService extends Service{
             wm = null;
         }
     }
+
+
 
     private class SingleTapConfirm extends GestureDetector.SimpleOnGestureListener {
 

@@ -1,12 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.shelper.overlay">
+    <queries>
+        <package android:name="com.kakao.talk" />
+    </queries>
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.CAMERA" />
+
 
     <application
         android:allowBackup="true"
@@ -18,6 +23,15 @@
         android:requestLegacyExternalStorage="true"
         android:networkSecurityConfig="@xml/network_security_config">
         <activity android:name="com.shelper.overlay.MainActivity">
+            <intent-filter>
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+        <activity android:name="com.shelper.overlay.FirstPage">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -34,6 +48,9 @@
                     android:scheme="https" />
             </intent-filter>
         </activity>
+        <meta-data
+            android:name="com.kakao.sdk.AppKey"
+            android:value="@string/kakao_app_key"/>
         <activity android:name="com.kakao.sdk.auth.AuthCodeHandlerActivity">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW"/>
@@ -46,9 +63,20 @@
         </activity>
         <activity android:name="com.shelper.overlay.TestaActivity"/>
         <activity android:name="com.shelper.overlay.SearchActivity"/>
-        <activity android:name="com.shelper.overlay.InformationPopupActivity" android:theme="@android:style/Theme.DeviceDefault.Light.Dialog"/>
+        <activity android:name="com.shelper.overlay.RecentActivity"/>
+        <activity android:name="com.shelper.overlay.FavoritesActivity"/>
+        <activity android:name="com.shelper.overlay.InformationPopupActivity" android:theme="@android:style/Theme.DeviceDefault.Light.Dialog">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:host="kakaolink"
+                    android:scheme="kakao{a404b66a2cf6ce41ce86c61ee1b5b545}" />
+            </intent-filter>
+        </activity>
         <activity android:name="com.shelper.overlay.LoadingActivity" android:theme="@android:style/Theme.NoTitleBar.Fullscreen"/>
         <activity android:name="com.shelper.overlay.PopupActivity" android:theme="@android:style/Theme.DeviceDefault.Light.Dialog"/>
+        <activity android:name="com.shelper.overlay.SecondsPopup" android:theme="@android:style/Theme.DeviceDefault.Light.Dialog"/>
         <service
             android:name="com.shelper.overlay.MyService"
             android:enabled="true"

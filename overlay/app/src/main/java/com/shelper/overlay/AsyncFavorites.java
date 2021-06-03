@@ -9,34 +9,18 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.ArrayList;
 
 import static android.content.ContentValues.TAG;
 
-public class AsyncSearch extends AsyncTask<String, Void, String> {
-
-    String result = "";
-//    ArrayList<ListViewList> arrayList = new ArrayList<ListViewList>();
-//    String contents_name = "";
-//    int contents_userid = 0;
-//    int contents_id = 0;
-    @Override
-    protected void onPostExecute(String s) {
-        super.onPostExecute(s);
-        if (s == null){
-        }
-        else {
-            result = s;
-        }
-    }
+public class AsyncFavorites extends AsyncTask<String, Void, String> {
 
     @Override
     protected String doInBackground(String[] params) {
-        String postParameters = "search=";
+        String postParameters = "userid=";
         postParameters += params[0];
 
         try {
-            URL url = new URL("https://shelper3.azurewebsites.net/search.php");
+            URL url = new URL("https://shelper3.azurewebsites.net/selectFavorites.php");
             HttpURLConnection httpURLConnection = (HttpURLConnection)url.openConnection();
 
             //httpURLConnection.setReadTimeout(5000);

@@ -1,7 +1,9 @@
 package com.shelper.overlay;
 
+import android.app.AlertDialog;
 import android.app.Service;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.PixelFormat;
 import android.graphics.Point;
@@ -18,6 +20,8 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewTreeObserver;
 import android.view.WindowManager;
+import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.constraintlayout.widget.ConstraintLayout;
@@ -37,6 +41,7 @@ public class MakeService extends Service {
     private ArrayList<Education> educations = new ArrayList<Education>();
     private ArrayList<File> files = new ArrayList<File>();
     private ArrayList<String> filenames = new ArrayList<String>();
+    private ArrayList<Integer> secondsList = new ArrayList<Integer>();
     private String filename;
     private int count = 0;
     LayoutInflater inflate;
@@ -45,7 +50,6 @@ public class MakeService extends Service {
     private WindowManager wm;
     private View mView;
     private View squareView;
-    private View graffitiView;
     private MediaPlayer mediaPlayer;
     private Intent passedIntent;
     float START_X2 = 0;
@@ -59,6 +63,7 @@ public class MakeService extends Service {
     private int folder_onoff = 1;
     private File dir;
     private String name = "";
+    private String passed_uri;
     private long now;
     private FloatingActionButton fab_before;
     private FloatingActionButton fab_next;
@@ -72,6 +77,7 @@ public class MakeService extends Service {
     private FloatingActionButton fab_color;
     private FloatingActionButton fab_confirm;
     private FloatingActionButton fab_play;
+    private TextView number_text;
     private boolean isFabOpen;
     private boolean isFabOpen2;
     private GestureDetector gestureDetector;
@@ -93,6 +99,7 @@ public class MakeService extends Service {
     private int biggestValue = 0;
     private boolean confirmChcker = false;
     private int FLAG;
+    private int userid;
 
 
     private View.OnTouchListener touchListener = new View.OnTouchListener() {
@@ -204,6 +211,7 @@ public class MakeService extends Service {
         fab_end = mView.findViewById(R.id.fab_end);
         fab_lock = mView.findViewById(R.id.fab_lock);
         fab_play = mView.findViewById(R.id.fab_play);
+        number_text = mView.findViewById(R.id.number_text);
 
         fab_menu3 = squareView.findViewById(R.id.fab_menu3);
         fab_confirm = squareView.findViewById(R.id.fab_confirm);
@@ -258,7 +266,9 @@ public class MakeService extends Service {
         fab_end = mView.findViewById(R.id.fab_end);
         fab_lock = mView.findViewById(R.id.fab_lock);
         fab_play = mView.findViewById(R.id.fab_play);
+        number_text = mView.findViewById(R.id.number_text);
 
+        number_text.setText(count+"");
         fab_menu2.setOnTouchListener(new View.OnTouchListener() {
             private int initialX;
             private int initialY;
@@ -344,6 +354,7 @@ public class MakeService extends Service {
                         }
                     }
                 }
+                number_text.setText(count+"");
             }
         });
         fab_next.setOnClickListener(new View.OnClickListener() {
@@ -377,6 +388,7 @@ public class MakeService extends Service {
                 } else {
                     Toast.makeText(getApplicationContext(),"값이 없습니다.",Toast.LENGTH_SHORT).show();
                 }
+                number_text.setText(count+"");
             }
 
         });
@@ -483,7 +495,7 @@ public class MakeService extends Service {
                         e.printStackTrace();
                     }
                     AsyncUpload asyncUpload = new AsyncUpload();
-                    asyncUpload.setUserid(1);
+                    asyncUpload.setUserid(userid);
                     asyncUpload.setName(name);
                     asyncUpload.setWidth(dm.widthPixels);
                     asyncUpload.setHeight(dm.heightPixels);
@@ -496,7 +508,8 @@ public class MakeService extends Service {
                     }
                     try {
                         AsyncFileUpload asyncFileUpload = new AsyncFileUpload();
-                        String[] ex = {getApplicationContext().getCacheDir() + "/" + simpleDateFormat.format(date) + ".zip", ""};
+                        asyncFileUpload.setUserid(userid);
+                        String[] ex = {getApplicationContext().getCacheDir() + "/" + simpleDateFormat.format(date) + ".zip", passed_uri};
                         Boolean TF = asyncFileUpload.execute(ex).get();
                         if(TF) {
                             stopService(passedIntent);
@@ -640,6 +653,8 @@ public class MakeService extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
         passedIntent = intent;
         name = intent.getStringExtra("name");
+        userid = intent.getIntExtra("userid",0);
+        passed_uri = intent.getStringExtra("uriuri");
         return super.onStartCommand(intent, flags, startId);
     }
 

@@ -5,6 +5,15 @@ import android.os.Parcel;
 public class Education {
 
     private Integer[] soundPaint;
+    private Integer seconds;
+
+    public Integer getSeconds() {
+        return seconds;
+    }
+
+    public void setSeconds(Integer seconds) {
+        this.seconds = seconds;
+    }
 
     protected Education(Parcel in) {
     }

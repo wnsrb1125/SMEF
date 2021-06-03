@@ -1,5 +1,6 @@
 apply plugin: 'com.android.application'
 apply plugin: 'com.google.gms.google-services'
+apply plugin: 'kotlin-android'
 
 android {
 
@@ -23,6 +24,10 @@ android {
     lintOptions {
         abortOnError false
     }
+
+    sourceSets {
+        main.java.srcDirs += 'src/main/kotlin'
+    }
 }
 
 dependencies {
@@ -43,4 +48,5 @@ dependencies {
     implementation 'com.kakao.sdk:v2-user:2.4.2'
     implementation 'com.kakao.sdk:v2-link:2.4.2'
     implementation 'com.kakao.sdk:v2-talk:2.4.2'
+    implementation 'org.jetbrains.kotlin:kotlin-stdlib:1.0.0'
 }

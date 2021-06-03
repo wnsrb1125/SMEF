@@ -7,7 +7,10 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.SearchView;
 import android.widget.Toast;
 
 import androidx.core.content.ContextCompat;
@@ -17,13 +20,14 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.concurrent.ExecutionException;
 
 import static android.content.ContentValues.TAG;
 
 public class SearchActivity extends Activity {
 
     private ListView listView;
-    private ArrayList<ListViewList> listViewLists;
+    private int user_id = 0;
     private int contents_id = 0;
     private int contents_userid = 0;
     private String contents_name = "";
@@ -31,6 +35,8 @@ public class SearchActivity extends Activity {
     private String timestamp;
     private String resultt = "";
     private ListViewAdapter listViewAdapter;
+    private Button searchButton;
+    private EditText searchText;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,19 +44,40 @@ public class SearchActivity extends Activity {
         setContentView(R.layout.search_view);
 
         listView = findViewById(R.id.list_view);
+        searchButton = findViewById(R.id.searchView);
+        searchText = findViewById(R.id.searchText);
+
+        searchButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String search_word = searchText.getText().toString();
+                AsyncSearch asyncSearch = new AsyncSearch();
+                try {
+                    String result = asyncSearch.execute(search_word).get();
+                    listViewAdapter = new ListViewAdapter();
+                    listView.setAdapter(listViewAdapter);
+                    showResult(result);
+                    listViewAdapter.notifyDataSetChanged();
+                } catch (ExecutionException e) {
+                    e.printStackTrace();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
         listViewAdapter = new ListViewAdapter();
         listView.setAdapter(listViewAdapter);
 
         Intent intent = getIntent();
+        user_id = intent.getIntExtra("userid",0);
         showResult(intent.getStringExtra("search_result"));
         Toast.makeText(SearchActivity.this,"엥",Toast.LENGTH_SHORT).show();
         listViewAdapter.notifyDataSetChanged();
 
 
     }
-    public ArrayList<ListViewList> showResult(String result) {
+    public void showResult(final String result) {
 
-        listViewLists = new ArrayList<ListViewList>();
         String TAG_JSON="webnautes";
 
         try {
@@ -65,7 +92,7 @@ public class SearchActivity extends Activity {
                 contents_name = item.getString("content_name");
                 views = item.getInt("views");
                 timestamp = item.getString("created_at");
-                listViewAdapter.addItem(ContextCompat.getDrawable(this,R.drawable.ic_android_black_24dp),contents_name,contents_id,views,timestamp);
+                listViewAdapter.addItem(ContextCompat.getDrawable(this,R.drawable.ic_baseline_account_circle_56),contents_name,contents_id,views,timestamp);
             }
 
         } catch (JSONException e) {
@@ -78,25 +105,27 @@ public class SearchActivity extends Activity {
 
                 String title = item.getName();
                 String desc = item.getId()+"";
+                String pictureA = "";
                 Drawable icon = item.getIconDrawable();
 
                 String str = "id : " + Long.toString(id) + "\r\ntitle : " + title + "\r\ndesc : " + desc;
-
+                AsyncPictureDownload asyncPictureDownload = new AsyncPictureDownload();
+                try {
+                    pictureA = asyncPictureDownload.execute("https://shelper3.azurewebsites.net/downloadpic.php?id="+item.getId(),""+item.getId()).get();
+                } catch (ExecutionException e) {
+                    e.printStackTrace();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
                 Intent intent = new Intent(SearchActivity.this,InformationPopupActivity.class);
                 intent.putExtra("id",item.getId());
+                intent.putExtra("userid",user_id);
+                intent.putExtra("name",item.getName());
+                intent.putExtra("picture",pictureA);
                 startActivity(intent);
 
             }
         });
-        return listViewLists;
-    }
-
-    private void startServ(int id) {
-        Intent intent = new Intent(SearchActivity.this, MyService.class);
-        intent.putExtra("edu",resultt);
-        intent.putExtra("id",id);
-        startService(intent);
-
     }
 
 }
