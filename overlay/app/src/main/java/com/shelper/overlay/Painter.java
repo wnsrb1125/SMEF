@@ -25,7 +25,7 @@ public class Painter extends View {
         Paint paint = new Paint();
         paint.setStrokeWidth(20f);
         paint.setAntiAlias(true);
-        paint.setColor(Color.BLUE);
+        paint.setColor(Color.RED);
         paint.setStyle(Paint.Style.STROKE);
 
         Rect rect = new Rect(this.paint[2],this.paint[3],this.paint[4],this.paint[5]);

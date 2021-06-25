@@ -192,7 +192,6 @@ public class MakeService2 extends Service {
         fab_menu3 = squareView.findViewById(R.id.fab_menu3);
         fab_confirm = squareView.findViewById(R.id.fab_confirm);
         fab_color = squareView.findViewById(R.id.fab_color);
-        fab_delete = squareView.findViewById(R.id.fab_delete);
         fab_thick = squareView.findViewById(R.id.fab_thick);
 
         //mView

@@ -26,20 +26,28 @@
         android:layout_marginStart="8dp"
         android:layout_marginLeft="8dp"
         android:layout_marginBottom="8dp"
-        android:text="search" />
+        android:textSize="18dp"
+        android:text="검색" />
     </LinearLayout>
 
-    <LinearLayout
+    <WebView
+        android:id="@+id/webView"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1">
+        android:layout_weight="7"
+        />
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom">
 
         <Button
             android:id="@+id/favorite"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="즐겨찾기" />
+            android:text="즐겨찾기"
+            android:textSize="18dp"/>
 
         <Button
             android:id="@+id/recent"
@@ -47,22 +55,9 @@
             android:layout_height="wrap_content"
             android:layout_marginLeft="5dp"
             android:layout_weight="1"
-            android:text="최근기록" />
+            android:text="최근기록"
+            android:textSize="18dp" />
     </LinearLayout>
 
-    <WebView
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="7"
-        />
-
-    <Button
-        android:id="@+id/make"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:layout_marginTop="8dp"
-        android:layout_marginBottom="8dp"
-        android:text="컨텐츠 만들기" />
 
 </LinearLayout>

@@ -20,6 +20,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewTreeObserver;
 import android.view.WindowManager;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -41,7 +42,6 @@ public class MakeService extends Service {
     private ArrayList<Education> educations = new ArrayList<Education>();
     private ArrayList<File> files = new ArrayList<File>();
     private ArrayList<String> filenames = new ArrayList<String>();
-    private ArrayList<Integer> secondsList = new ArrayList<Integer>();
     private String filename;
     private int count = 0;
     LayoutInflater inflate;
@@ -50,6 +50,10 @@ public class MakeService extends Service {
     private WindowManager wm;
     private View mView;
     private View squareView;
+    private View urlView;
+    private View uploadView;
+    private View secondView;
+    private View textView;
     private MediaPlayer mediaPlayer;
     private Intent passedIntent;
     float START_X2 = 0;
@@ -77,6 +81,9 @@ public class MakeService extends Service {
     private FloatingActionButton fab_color;
     private FloatingActionButton fab_confirm;
     private FloatingActionButton fab_play;
+    private FloatingActionButton fab_url_plus;
+    private FloatingActionButton fab_seconds;
+    //private FloatingActionButton fab_text;
     private TextView number_text;
     private boolean isFabOpen;
     private boolean isFabOpen2;
@@ -87,6 +94,7 @@ public class MakeService extends Service {
     private WindowManager.LayoutParams params2;
     private WindowManager.LayoutParams params3;
     private WindowManager.LayoutParams params4;
+    private WindowManager.LayoutParams params5;
     private int rec_mode = 0; // 0: 녹음전 1: 녹음 중 2: 녹음 후
     private int play_mode = 0;
     private ConstraintLayout constraintLayout;
@@ -100,6 +108,9 @@ public class MakeService extends Service {
     private boolean confirmChcker = false;
     private int FLAG;
     private int userid;
+    private String url = "";
+    private String text = "";
+    private int seconds = 10;
 
 
     private View.OnTouchListener touchListener = new View.OnTouchListener() {
@@ -107,6 +118,10 @@ public class MakeService extends Service {
         public boolean onTouch(View v, MotionEvent event) {
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN:
+                    fab_confirm.setVisibility(View.INVISIBLE);
+                    fab_thick.setVisibility(View.INVISIBLE);
+                    fab_color.setVisibility(View.INVISIBLE);
+                    fab_menu3.setVisibility(View.INVISIBLE);
                     if(painter != null) {
                         wm.removeView(painter);
                         painter = null;
@@ -116,7 +131,7 @@ public class MakeService extends Service {
                     START_X2 = event.getX();
                     START_Y2 = event.getY();
 
-                    draw = new Integer[] {1,1,Integer.valueOf((int)START_X2),Integer.valueOf((int)START_Y2),Integer.valueOf((int)START_X2+1),Integer.valueOf((int)START_Y2+1)};
+                    draw = new Integer[] {1,1,Integer.valueOf((int)START_X2),Integer.valueOf((int)START_Y2),Integer.valueOf((int)START_X2+1),Integer.valueOf((int)START_Y2+1),seconds};
                     painter.setDrawInformation(draw);
                     wm.addView(painter,params4);
                     break;
@@ -142,8 +157,15 @@ public class MakeService extends Service {
                     if (squareView == null) {
                         squareView = inflate.inflate(R.layout.square_make, null);
                     }
+                    fab_confirm.setVisibility(View.VISIBLE);
+                    fab_thick.setVisibility(View.VISIBLE);
+                    fab_color.setVisibility(View.VISIBLE);
+                    fab_menu3.setVisibility(View.VISIBLE);
                     Education education = new Education();
                     education.setSoundPaint(draw);
+                    education.setUrl(url);
+                    education.setText(text);
+                    Log.d("url",url);
                     if (onoff == 1) {
                         Toast.makeText(getApplicationContext(), count + "", Toast.LENGTH_SHORT).show();
                         educations.set(count, education);
@@ -200,8 +222,17 @@ public class MakeService extends Service {
                 WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE| WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
                 ,PixelFormat.TRANSLUCENT);
 
+        params5 = new WindowManager.LayoutParams(WindowManager.LayoutParams.MATCH_PARENT,WindowManager.LayoutParams.MATCH_PARENT,
+                FLAG,
+                WindowManager.LayoutParams.FLAG_BLUR_BEHIND
+                ,PixelFormat.TRANSLUCENT);
+
+        urlView = inflate.inflate(R.layout.activity_dialog_url, null);
         mView = inflate.inflate(R.layout.view_in_myservices, null);
+        uploadView = inflate.inflate(R.layout.view_upload, null);
         squareView = inflate.inflate(R.layout.square_make, null);
+        secondView = inflate.inflate(R.layout.view_seconds, null);
+        textView = inflate.inflate(R.layout.view_texrt, null);
 
         fab_menu2 = mView.findViewById(R.id.fab_menu2);
         fab_before = mView.findViewById(R.id.fab_before2);
@@ -211,6 +242,9 @@ public class MakeService extends Service {
         fab_end = mView.findViewById(R.id.fab_end);
         fab_lock = mView.findViewById(R.id.fab_lock);
         fab_play = mView.findViewById(R.id.fab_play);
+        fab_url_plus = mView.findViewById(R.id.url_plus);
+        fab_seconds = mView.findViewById(R.id.fab_seconds);
+        //fab_text = mView.findViewById(R.id.fab_text);
         number_text = mView.findViewById(R.id.number_text);
 
         fab_menu3 = squareView.findViewById(R.id.fab_menu3);
@@ -266,6 +300,9 @@ public class MakeService extends Service {
         fab_end = mView.findViewById(R.id.fab_end);
         fab_lock = mView.findViewById(R.id.fab_lock);
         fab_play = mView.findViewById(R.id.fab_play);
+        fab_url_plus = mView.findViewById(R.id.url_plus);
+        fab_seconds = mView.findViewById(R.id.fab_seconds);
+       // fab_text = mView.findViewById(R.id.fab_text);
         number_text = mView.findViewById(R.id.number_text);
 
         number_text.setText(count+"");
@@ -332,26 +369,38 @@ public class MakeService extends Service {
                             painterMap.remove(count);
                         }
                     }
+                    seconds = 10;
+                    url = "";
+                    text = "";
                     count--;
                     fab_play.setVisibility(View.INVISIBLE);
-                    if(count < educations.size()) {
+                    Log.d("count/fn",count+"/"+filenames.size());
+                    if(count < filenames.size()) {
                         again = 1;
+                        fab_play.setImageResource(R.drawable.ic_play_arrow_black_24dp);
+                        fab_play.setVisibility(View.VISIBLE);
+                    }
+                    if(count < educations.size()) {
+                        url = educations.get(count).getUrl();
+                        text = educations.get(count).getText();
+                        seconds = educations.get(count).getSoundPaint()[6];
+                        Log.d("seconds",String.valueOf(seconds));
                         if (painter != null) {
                             wm.removeView(mView);
                             wm.removeView(painter);
+                            painter = null;
                         }
                         else {
                             wm.removeView(mView);
+                            painter = null;
                         }
-                        painter = new Painter(getApplicationContext());
-                        painter.setDrawInformation(educations.get(count).getSoundPaint());
-                        wm.addView(painter, params4);
+                        if (educations.get(count).getSoundPaint()[3] != 0 && educations.get(count).getSoundPaint()[4] != 0) {
+                            painter = new Painter(getApplicationContext());
+                            painter.setDrawInformation(educations.get(count).getSoundPaint());
+                            wm.addView(painter, params4);
+                        }
                         wm.addView(mView, params2);
                         setFab_menu2();
-                        if (files.get(count) != null) {
-                            fab_play.setImageResource(R.drawable.ic_play_arrow_black_24dp);
-                            fab_play.setVisibility(View.VISIBLE);
-                        }
                     }
                 }
                 number_text.setText(count+"");
@@ -360,27 +409,52 @@ public class MakeService extends Service {
         fab_next.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (fileMap.containsKey(count) && painterMap.containsKey(count)) {
+                if (fileMap.containsKey(count)) {
+                    if (!painterMap.containsKey(count)) {
+                        painterMap.put(count, true);
+                        Education education = new Education();
+                        education.setSoundPaint(new Integer[]{1,1,0,0,0,0,seconds});
+                        education.setUrl(url);
+                        education.setText(text);
+                        educations.add(education);
+                    } else {
+                        Education education = educations.get(count);
+                        education.setUrl(url);
+                        education.setText(text);
+                        educations.set(count,education);
+                    }
+                    url = "";
+                    text = "";
+                    seconds = 10;
                     again = 0;
                     count++;
                     if (biggestValue < count) {
                         biggestValue = count;
                     }
                     fab_play.setVisibility(View.INVISIBLE);
-                    Log.d("errorfind", count + "/" + educations.size() + "");
-                    if (painter != null && count < educations.size()) {
+                    //Log.d("errorfind", count + "/" + educations.size() + "");
+                    Log.d("count/fn",count+"/"+filenames.size());
+                    if(count < filenames.size()) {
                         again = 1;
-                        wm.removeView(painter);
+                        fab_play.setImageResource(R.drawable.ic_play_arrow_black_24dp);
+                        fab_play.setVisibility(View.VISIBLE);
+                    }
+                    if (count < educations.size()) {
+                        if(painter != null) {
+                            wm.removeView(painter);
+                        }
                         painter = null;
                         wm.removeView(mView);
-                        painter = new Painter(getApplicationContext());
-                        painter.setDrawInformation(educations.get(count).getSoundPaint());
-                        wm.addView(painter, params4);
-                        wm.addView(mView, params2);
-                        if (files.get(count) != null) {
-                            fab_play.setImageResource(R.drawable.ic_play_arrow_black_24dp);
-                            fab_play.setVisibility(View.VISIBLE);
+                        if(educations.get(count).getSoundPaint()[3] != 0 && educations.get(count).getSoundPaint()[4] != 0) {
+                            painter = new Painter(getApplicationContext());
+                            painter.setDrawInformation(educations.get(count).getSoundPaint());
+                            wm.addView(painter, params4);
                         }
+                        wm.addView(mView, params2);
+                        url = educations.get(count).getUrl();
+                        text = educations.get(count).getText();
+                        seconds = educations.get(count).getSoundPaint()[6];
+                        Log.d("seconds",String.valueOf(seconds));
                     } else if (painter != null) {
                         wm.removeView(painter);
                         painter = null;
@@ -396,6 +470,10 @@ public class MakeService extends Service {
             @Override
             public void onClick(View v) {
                 stopService(passedIntent);
+                Intent intent = new Intent(getApplicationContext(),MainActivity.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                intent.putExtra("myservice",1);
+                startActivity(intent);
             }
         });
         fab_rec.setOnClickListener(new View.OnClickListener() {
@@ -408,17 +486,13 @@ public class MakeService extends Service {
                         recorder.release();
                         recorder = null;
                         if (again == 0) {
-                            files.add(file);
                             filenames.add(filename);
                             again = 1;
+                            Log.d("filename0",filenames.get(count));
                         }
                         else {
-                            Log.d("filename",filenames.get(count));
+                            Log.d("filename1",filenames.get(count));
                             File file = new File(filenames.get(count));
-                            if (file.exists()) {
-                                file.delete();
-                            }
-                            files.set(count,file);
                             filenames.set(count,filename);
                         }
                         if (!fileMap.containsKey(count)) {
@@ -439,17 +513,12 @@ public class MakeService extends Service {
                         }
                         folder_onoff = 0;
                     }
-                    try {
-                        file = File.createTempFile(simpleDateFormat.format(date)+count,".m4a", dir);
-                        filename = file.getAbsolutePath();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
                     recorder = new MediaRecorder();
                     recorder.setAudioSource(MediaRecorder.AudioSource.MIC);
                     recorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
                     recorder.setAudioEncoder(MediaRecorder.AudioEncoder.DEFAULT);
-                    recorder.setOutputFile(filename);
+                    recorder.setOutputFile(getApplicationContext().getCacheDir()+"/"+simpleDateFormat.format(date)+ "/"+count+".mp4");
+                    filename = getApplicationContext().getCacheDir()+"/"+simpleDateFormat.format(date)+ "/"+count+".mp4";
 
                     try {
                         recorder.prepare();
@@ -486,41 +555,65 @@ public class MakeService extends Service {
         fab_end.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (painterMap.containsKey(biggestValue) && fileMap.containsKey(biggestValue)) {
-                    DisplayMetrics dm = getResources().getDisplayMetrics();
-                    try {
-                        Ziper ziper = new Ziper();
-                        ziper.zipFolder(getApplicationContext().getCacheDir() + "/" + simpleDateFormat.format(date), getApplicationContext().getCacheDir() + "/" + simpleDateFormat.format(date) + ".zip");
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                    AsyncUpload asyncUpload = new AsyncUpload();
-                    asyncUpload.setUserid(userid);
-                    asyncUpload.setName(name);
-                    asyncUpload.setWidth(dm.widthPixels);
-                    asyncUpload.setHeight(dm.heightPixels);
-                    try {
-                        asyncUpload.execute(educations.toArray(new Education[educations.size()])).get();
-                    } catch (ExecutionException e) {
-                        e.printStackTrace();
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                    try {
-                        AsyncFileUpload asyncFileUpload = new AsyncFileUpload();
-                        asyncFileUpload.setUserid(userid);
-                        String[] ex = {getApplicationContext().getCacheDir() + "/" + simpleDateFormat.format(date) + ".zip", passed_uri};
-                        Boolean TF = asyncFileUpload.execute(ex).get();
-                        if(TF) {
-                            stopService(passedIntent);
-                        }
+                wm.addView(uploadView,params5);
+                Button confirm_button = uploadView.findViewById(R.id.end_up_button);
+                Button cancel_button = uploadView.findViewById(R.id.end_cancel_button);
+                confirm_button.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        if (fileMap.containsKey(biggestValue)) {
+                            if(!painterMap.containsKey(biggestValue)) {
+                                painterMap.put(biggestValue, true);
+                                Education education = new Education();
+                                education.setSoundPaint(new Integer[]{1,1,0,0,0,0,seconds});
+                                education.setUrl(url);
+                                education.setText(text);
+                                educations.add(education);
+                            }
+                            fab_end.setVisibility(View.INVISIBLE);
+                            DisplayMetrics dm = getResources().getDisplayMetrics();
+                            try {
+                                Ziper ziper = new Ziper();
+                                ziper.zipFolder(getApplicationContext().getCacheDir() + "/" + simpleDateFormat.format(date), getApplicationContext().getCacheDir() + "/" + simpleDateFormat.format(date) + ".zip");
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                            AsyncUpload asyncUpload = new AsyncUpload();
+                            asyncUpload.setUserid(userid);
+                            asyncUpload.setName(name);
+                            asyncUpload.setWidth(dm.widthPixels);
+                            asyncUpload.setHeight(dm.heightPixels);
+                            try {
+                                asyncUpload.execute(educations.toArray(new Education[educations.size()])).get();
+                            } catch (ExecutionException e) {
+                                e.printStackTrace();
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
+                            try {
+                                AsyncFileUpload asyncFileUpload = new AsyncFileUpload();
+                                asyncFileUpload.setUserid(userid);
+                                String[] ex = {getApplicationContext().getCacheDir() + "/" + simpleDateFormat.format(date) + ".zip", passed_uri};
+                                Boolean TF = asyncFileUpload.execute(ex).get();
+                                if(TF) {
+                                    stopService(passedIntent);
+                                }
 
-                    } catch (Exception e) {
-                        e.printStackTrace();
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        } else {
+                            Toast.makeText(getApplicationContext(),"완성하시오",Toast.LENGTH_SHORT).show();
+                        }
+                        wm.removeView(uploadView);
                     }
-                } else {
-                    Toast.makeText(getApplicationContext(),"완성하시오",Toast.LENGTH_SHORT).show();
-                }
+                });
+                cancel_button.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        wm.removeView(uploadView);
+                    }
+                });
             }
         });
         fab_lock.setOnClickListener(new View.OnClickListener() {
@@ -535,6 +628,83 @@ public class MakeService extends Service {
                 squareView.setOnTouchListener(touchListener);
                 setFab_menu3();
                 showFab2();
+            }
+        });
+        fab_url_plus.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                wm.addView(urlView,params5);
+                Button confirm_button = urlView.findViewById(R.id.url_button);
+                Button cancel_button = urlView.findViewById(R.id.url_cancel_button);
+                final EditText url_text = urlView.findViewById(R.id.url_text);
+                url_text.setText(url);
+                confirm_button.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        url = url_text.getText().toString();
+                        wm.removeView(urlView);
+                    }
+                });
+
+                cancel_button.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        wm.removeView(urlView);
+                    }
+                });
+            }
+        });
+//        fab_text.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                wm.addView(textView,params5);
+//                Button confirm_button = textView.findViewById(R.id.text_button);
+//                Button cancel_button = textView.findViewById(R.id.text_cancel_button);
+//                final EditText text_text = textView.findViewById(R.id.text_text);
+//                text_text.setText(text);
+//                confirm_button.setOnClickListener(new View.OnClickListener() {
+//                    @Override
+//                    public void onClick(View v) {
+//                        text = text_text.getText().toString();
+//                        wm.removeView(textView);
+//                    }
+//                });
+//
+//                cancel_button.setOnClickListener(new View.OnClickListener() {
+//                    @Override
+//                    public void onClick(View v) {
+//                        wm.removeView(textView);
+//                    }
+//                });
+//            }
+//        });
+        fab_seconds.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                wm.addView(secondView,params5);
+                Button confirm_button = secondView.findViewById(R.id.second_button);
+                Button cancel_button = secondView.findViewById(R.id.second_cancel_button);
+                final EditText second_text = secondView.findViewById(R.id.second_text);
+                second_text.setText(String.valueOf(seconds));
+                confirm_button.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        seconds = Integer.parseInt(String.valueOf(second_text.getText()));
+                        if (painter != null) {
+                            Education old = educations.get(count);
+                            old.getSoundPaint()[6] = seconds;
+                            educations.set(count,old);
+                        }
+                        wm.removeView(secondView);
+                    }
+                });
+
+                cancel_button.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        wm.removeView(secondView);
+                    }
+                });
             }
         });
     }
@@ -621,6 +791,9 @@ public class MakeService extends Service {
         fab_before.animate().translationX(-getResources().getDimension(R.dimen.standard_230));
         fab_lock.animate().translationX(-getResources().getDimension(R.dimen.standard_275));
         fab_play.animate().translationX(-getResources().getDimension(R.dimen.standard_320));
+        fab_url_plus.animate().translationY(-getResources().getDimension(R.dimen.standard_50));
+        fab_seconds.animate().translationY(-getResources().getDimension(R.dimen.standard_95));
+        //fab_text.animate().translationY(-getResources().getDimension(R.dimen.standard_140));
     }
 
     public void closeFab() {
@@ -632,6 +805,9 @@ public class MakeService extends Service {
         fab_end.animate().translationX(0);
         fab_lock.animate().translationX(0);
         fab_play.animate().translationX(0);
+        fab_url_plus.animate().translationY(0);
+        fab_seconds.animate().translationY(0);
+        //fab_text.animate().translationY(0);
     }
 
     public void showFab2() {
@@ -655,6 +831,7 @@ public class MakeService extends Service {
         name = intent.getStringExtra("name");
         userid = intent.getIntExtra("userid",0);
         passed_uri = intent.getStringExtra("uriuri");
+        Log.d("uri2",passed_uri);
         return super.onStartCommand(intent, flags, startId);
     }
 

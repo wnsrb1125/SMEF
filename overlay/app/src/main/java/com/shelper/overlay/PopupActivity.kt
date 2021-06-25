@@ -11,17 +11,17 @@ import android.view.Window
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageView
+import android.widget.Toast
+import org.json.JSONException
 import java.io.File
 
 class PopupActivity : Activity() {
     var et: EditText? = null
     var uploadButton: Button? = null;
     var bt: Button? = null;
-    var uri : String? = null;
+    var uri : String? = "nono";
     var imageView : ImageView? = null;
-    val PICK_FROM_CAMERA = 0;
     val PICK_FROM_ALBUM = 1;
-    val CROP_FROM_CAMERA = 2;
 
 
 
@@ -29,9 +29,10 @@ class PopupActivity : Activity() {
         super.onCreate(savedInstanceState)
         requestWindowFeature(Window.FEATURE_CUSTOM_TITLE)
         setContentView(R.layout.activity_popup)
+        window.setFeatureInt(Window.FEATURE_CUSTOM_TITLE,R.layout.custom_title)
         bt = findViewById(R.id.sendbt)
         et = findViewById(R.id.editText)
-        imageView = findViewById(R.id.tth)
+        imageView = findViewById(R.id.tth) as ImageView
         uploadButton = findViewById(R.id.uploadImage)
 
         uploadButton?.setOnClickListener{
@@ -44,12 +45,16 @@ class PopupActivity : Activity() {
         }
 
         bt?.setOnClickListener {
-            val name = et?.getText().toString()
-            val intent = Intent()
-            intent.putExtra("name", name)
-            intent.putExtra("uri",uri)
-            setResult(123, intent)
-            finish()
+            if(et!!.text.toString().length > 0 && uri != "nono") {
+                val name = et?.getText().toString()
+                val intent = Intent()
+                intent.putExtra("name", name)
+                intent.putExtra("uri",uri)
+                setResult(123, intent)
+                finish()
+            }else {
+                Toast.makeText(applicationContext,"제목을 입력하거나, 썸네일을 등록해주세요.", Toast.LENGTH_SHORT).show()
+            }
         }
     }
 
@@ -59,9 +64,14 @@ class PopupActivity : Activity() {
         when(requestCode) {
             PICK_FROM_ALBUM -> {
                 var currentUri : Uri? = data?.data
-                uri = getRealPathFromURI(currentUri)
-                val bitmap = MediaStore.Images.Media.getBitmap(contentResolver,currentUri)
-                imageView?.setImageBitmap(bitmap)
+                try {
+                    uri = getRealPathFromURI(currentUri)
+                    val bitmap = MediaStore.Images.Media.getBitmap(contentResolver,currentUri)
+                    imageView?.setImageBitmap(bitmap)
+                } catch (e: Exception) {
+                    uri = "nono"
+                }
+
 
             }
         }

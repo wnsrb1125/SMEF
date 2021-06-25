@@ -3,10 +3,33 @@
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/back"
     >
     <ImageView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:src="@drawable/koko"/>
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:src="@drawable/teat"
+        android:background="@color/back"/>
+
+    <TextView
+        android:fontFamily="@font/kotra"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="쉽고 빠르게 배우는 스마트폰"
+        android:textSize="30dp"
+        android:layout_gravity="center"
+        android:textColor="@color/white2"/>
+
+    <TextView
+        android:layout_marginTop="20dp"
+        android:fontFamily="@font/kotra"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="폰 선 생"
+        android:textSize="80dp"
+        android:layout_gravity="center"
+        android:textStyle="bold"
+        android:textColor="@color/white2"/>
 
 </LinearLayout>

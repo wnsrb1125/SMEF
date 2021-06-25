@@ -18,68 +18,77 @@ import static android.content.ContentValues.TAG;
 
 public class AsyncDownload extends AsyncTask<String,Void,String> {
 
+    @Override
+    protected void onPreExecute() {
+        super.onPreExecute();
+    }
+
+    @Override
+    protected void onPostExecute(String s) {
+        super.onPostExecute(s);
+    }
 
     @Override
     protected String doInBackground(String[] params) {
 
         String line = "";
-        String postParameters = "";
-        BufferedReader bufferedReader = null;
         String zipname = params[1]+".zip";
 
         try {
-            URL url = new URL(params[0]);
-            HttpURLConnection httpURLConnection = (HttpURLConnection)url.openConnection();
+            File folder = new File("data/data/com.shelper.overlay/" + params[1]);
+            if(!folder.exists()) {
+                URL url = new URL(params[0]);
+                HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection();
 
-            httpURLConnection.setRequestMethod("POST");
-            httpURLConnection.setRequestProperty("Accept-Encoding","Identity");
-            httpURLConnection.connect();
+                httpURLConnection.setRequestMethod("POST");
+                httpURLConnection.setRequestProperty("Accept-Encoding", "Identity");
+                httpURLConnection.connect();
 
 //            OutputStream outputStream = httpURLConnection.getOutputStream();
 //            outputStream.write(postParameters.getBytes("UTF-8"));
 //            outputStream.flush();
 //            outputStream.close();
 
-            int responseStatusCode = httpURLConnection.getResponseCode();
-            Log.d(TAG, "response code - " + responseStatusCode);
+                int responseStatusCode = httpURLConnection.getResponseCode();
+                Log.d(TAG, "response code - " + responseStatusCode);
 
-            InputStream inputStream;
+                InputStream inputStream;
 
-            if(responseStatusCode == HttpURLConnection.HTTP_OK) {
-                inputStream = httpURLConnection.getInputStream();
+                if (responseStatusCode == HttpURLConnection.HTTP_OK) {
+                    inputStream = httpURLConnection.getInputStream();
 
+                } else {
+                    inputStream = httpURLConnection.getErrorStream();
+                }
+
+
+                int nLen = httpURLConnection.getContentLength();
+                Log.d("!@#%$", nLen + "");
+                byte[] bytes = new byte[nLen];
+
+                File voice = new File("data/data/com.shelper.overlay/" + zipname);
+                FileOutputStream fos = new FileOutputStream(voice);
+
+                int read;
+                while (true) {
+                    Log.d(TAG, "while ");
+                    read = inputStream.read(bytes);
+                    if (read <= 0)
+                        break;
+                    fos.write(bytes, 0, read);
+                }
+
+                inputStream.close();
+                fos.close();
+                httpURLConnection.disconnect();
+                unpackZip("data/data/com.shelper.overlay/", zipname, params[1]);
             }
-            else{
-                inputStream = httpURLConnection.getErrorStream();
-            }
-
-
-            int nLen = httpURLConnection.getContentLength();
-            Log.d("!@#%$",nLen+"");
-            byte[] bytes = new byte[nLen];
-
-            File voice = new File("data/data/com.shelper.overlay/"+zipname);
-            FileOutputStream fos = new FileOutputStream(voice);
-
-            int read;
-            while(true) {
-                Log.d(TAG, "while ");
-                read = inputStream.read(bytes);
-                if (read <= 0)
-                    break;
-                fos.write(bytes,0,read);
-            }
-
-            inputStream.close();
-            fos.close();
-            httpURLConnection.disconnect();
-            unpackZip("data/data/com.shelper.overlay/",zipname, params[1]);
-
 
         } catch (Exception e) {
             e.printStackTrace();
         }
         return line;
+
     }
 
     private boolean unpackZip(String path, String zipname, String foldername){
@@ -103,6 +112,8 @@ public class AsyncDownload extends AsyncTask<String,Void,String> {
 
             while ((ze = zis.getNextEntry()) != null){
                 filename = ze.getName();
+
+                Log.d("zeze",filename);
 
 
                 File fmd = new File(path + filename);

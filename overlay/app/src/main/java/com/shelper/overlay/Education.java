@@ -5,14 +5,23 @@ import android.os.Parcel;
 public class Education {
 
     private Integer[] soundPaint;
-    private Integer seconds;
+    private String url;
+    private String text;
 
-    public Integer getSeconds() {
-        return seconds;
+    public String getText() {
+        return text;
     }
 
-    public void setSeconds(Integer seconds) {
-        this.seconds = seconds;
+    public void setText(String text) {
+        this.text = text;
+    }
+
+    public String getUrl() {
+        return url;
+    }
+
+    public void setUrl(String url) {
+        this.url = url;
     }
 
     protected Education(Parcel in) {

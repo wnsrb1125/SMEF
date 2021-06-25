@@ -11,8 +11,8 @@ android {
         applicationId "com.shelper.overlay"
         minSdkVersion 28
         targetSdkVersion 29
-        versionCode 6
-        versionName "1.5"
+        versionCode 15
+        versionName "2.16"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
@@ -49,4 +49,6 @@ dependencies {
     implementation 'com.kakao.sdk:v2-link:2.4.2'
     implementation 'com.kakao.sdk:v2-talk:2.4.2'
     implementation 'org.jetbrains.kotlin:kotlin-stdlib:1.0.0'
+    implementation 'com.google.android.gms:play-services-ads:20.1.0'
+
 }

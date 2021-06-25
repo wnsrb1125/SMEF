@@ -1,5 +1,7 @@
 package com.shelper.overlay;
 
+import android.app.ProgressDialog;
+import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
 
@@ -16,19 +18,43 @@ import static android.content.ContentValues.TAG;
 public class AsyncSearch extends AsyncTask<String, Void, String> {
 
     String result = "";
-//    ArrayList<ListViewList> arrayList = new ArrayList<ListViewList>();
-//    String contents_name = "";
-//    int contents_userid = 0;
-//    int contents_id = 0;
+    ProgressDialog dialog;
+    MainActivity context;
+    SearchActivity context2;
+    Boolean c;
     @Override
     protected void onPostExecute(String s) {
         super.onPostExecute(s);
+        dialog.dismiss();
         if (s == null){
         }
         else {
             result = s;
         }
     }
+
+    public AsyncSearch(Context context) {
+        if(context instanceof MainActivity) {
+            this.context = (MainActivity) context;
+            c = true;
+        } else  {
+            this.context2 = (SearchActivity) context;
+            c = false;
+        }
+    }
+    @Override
+    protected void onPreExecute() {
+        super.onPreExecute();
+        if (c) {
+            dialog = new ProgressDialog(context);
+            //dialog.setCancelable(false);
+        } else {
+            dialog = new ProgressDialog(context2);
+            //dialog.setCancelable(false);
+        }
+        dialog.show();
+    }
+
 
     @Override
     protected String doInBackground(String[] params) {

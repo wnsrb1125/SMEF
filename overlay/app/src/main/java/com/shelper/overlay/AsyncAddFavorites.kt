@@ -13,17 +13,6 @@ import java.util.*
 
 class AsyncAddFavorites : AsyncTask<String, Void, Void>() {
     var a: String? = null
-    var progressDialog: ProgressDialog? = null
-    var mJsonString: String? = null
-    private val IdArray = ArrayList<Int>()
-    private val count = 0
-    private val mArrayList = ArrayList<Education>()
-    private val id = 0
-    private val filepath = ""
-    private var name = ""
-    private var userid = 0
-    private var widthPixel = 0
-    private var heightPixel = 0
 
 
     override fun doInBackground(vararg params: String?): Void? {

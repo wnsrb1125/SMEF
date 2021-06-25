@@ -5,8 +5,13 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.PixelFormat;
 import android.graphics.Point;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
@@ -21,7 +26,9 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewTreeObserver;
 import android.view.WindowManager;
+import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.constraintlayout.widget.ConstraintLayout;
@@ -35,26 +42,36 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.concurrent.ExecutionException;
 
 import static android.content.ContentValues.TAG;
 
-public class MyService extends Service {
+public class MyService extends Service implements SensorEventListener {
 
+    private long shakeTime;
+    private static final int SHAKE_SKIP_TIME = 500;
+    private static final float SHAKE_THRESHOLD_GRAVITY = 2.5F;
     private int educations_length;
     private ArrayList<Education> educations = new ArrayList<Education>();
     private int count = 0;
     private String filepath = "sound";
     private Integer[] a = {11,65,180,75,190};
     private String t = "";
+    private int next_button_push = 0;
+    private int play_button_push = 0;
+    private int before_button_push = 0;
+    private int again_button_push = 0;
     private Painter painter;
     private Education education;
     private WindowManager wm;
     private View mView;
+    private View tView;
     private String media_path = "file:///data/data/com.shelper.overlay/";
     private Intent passedIntent;
     private int passedId;
     private int contents_id;
     private int mWidth;
+    private WindowManager.LayoutParams params;
     private WindowManager.LayoutParams params2;
     private WindowManager.LayoutParams paramsk;
     private GestureDetector gestureDetector;
@@ -63,30 +80,51 @@ public class MyService extends Service {
     private FloatingActionButton fab_again;
     private FloatingActionButton fab_close;
     private FloatingActionButton fab_play;
+    private FloatingActionButton fab_url;
+    private FloatingActionButton fab_text;
+    private FloatingActionButton fab_menu;
     private MediaPlayer MotoMediaPlayer = null;
     private boolean isFabOpen;
     private int FLAG;
     private boolean ofswitch = true;
     private String edu_result;
+    private int start_time;
+    private String text;
+    private SensorManager sensorManager;
+    private Sensor accelerometer;
+    LayoutInflater inflate2;
+    private boolean visibility_switch = true;
+
 
 
     @Override
-    public IBinder onBind(Intent intent) { return null; }
+    public IBinder onBind(Intent intent) {
+        return null;
+    }
 
     @Override
     public void onCreate() {
         super.onCreate();
+        start_time = (int) (System.currentTimeMillis() / 1000);
+        inflate2  = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         LayoutInflater inflate = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         wm = (WindowManager) getSystemService(WINDOW_SERVICE);
         Display display = wm.getDefaultDisplay();
         final Point size = new Point();
         display.getSize(size);
+        sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
+        accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             FLAG = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
         } else {
             FLAG = WindowManager.LayoutParams.TYPE_PHONE;
         }
         paramsk = new WindowManager.LayoutParams(WindowManager.LayoutParams.WRAP_CONTENT, WindowManager.LayoutParams.WRAP_CONTENT,
+                FLAG,
+                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
+                ,PixelFormat.TRANSLUCENT);
+
+        params = new WindowManager.LayoutParams(WindowManager.LayoutParams.WRAP_CONTENT, WindowManager.LayoutParams.WRAP_CONTENT,
                 FLAG,
                 WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
                 ,PixelFormat.TRANSLUCENT);
@@ -99,12 +137,14 @@ public class MyService extends Service {
         params2.gravity = Gravity.CENTER | Gravity.TOP;
 
         mView = inflate.inflate(R.layout.view_in_service, null);
-        FloatingActionButton floatingActionButton = mView.findViewById(R.id.fab_menu);
+        fab_menu = mView.findViewById(R.id.fab_menu);
         fab_before = mView.findViewById(R.id.fab_before);
         fab_next = mView.findViewById(R.id.fab_next);
         fab_again = mView.findViewById(R.id.fab_current);
         fab_close = mView.findViewById(R.id.fab_cancel);
         fab_play = mView.findViewById(R.id.fab_playing);
+        fab_url = mView.findViewById(R.id.fab_url);
+        fab_text = mView.findViewById(R.id.fab_texts);
         final ConstraintLayout constraintLayout = mView.findViewById(R.id.service_view);
         gestureDetector = new GestureDetector(this,new SingleTapConfirm());
         ViewTreeObserver vto = constraintLayout.getViewTreeObserver();
@@ -116,7 +156,7 @@ public class MyService extends Service {
                 mWidth = size.x - width;
             }
         });
-        floatingActionButton.setOnTouchListener(new View.OnTouchListener() {
+        fab_menu.setOnTouchListener(new View.OnTouchListener() {
             private int initialX;
             private int initialY;
             private float initialTouchX;
@@ -167,28 +207,81 @@ public class MyService extends Service {
         fab_close.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                int playing_time = (int) (System.currentTimeMillis() / 1000 - start_time);
+                AsynclogContents asynclogContents = new AsynclogContents();
+                try {
+                    asynclogContents.execute(contents_id,playing_time,play_button_push,next_button_push,before_button_push,again_button_push).get();
+                } catch (ExecutionException e) {
+                    e.printStackTrace();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                ofswitch = false;
+                if (MotoMediaPlayer != null && MotoMediaPlayer.isPlaying()) {
+                    MotoMediaPlayer.stop();
+                }
                 stopService(passedIntent);
-
+                Intent intent = new Intent(getApplicationContext(),MainActivity.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                intent.putExtra("myservice",1);
+                startActivity(intent);
             }
         });
-
 
         fab_again.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                again_button_push++;
+                if (tView != null) {
+                    wm.removeView(tView);
+                    tView = null;
+                }
                 player();
+            }
+        });
+
+        fab_text.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (tView != null) {
+                    wm.removeView(tView);
+                    tView = null;
+                } else {
+                    tView = inflate2.inflate(R.layout.view_textservice, null);
+                    wm.addView(tView,params);
+                    TextView textView = tView.findViewById(R.id.textt);
+                    TextView button = tView.findViewById(R.id.textt_button);
+                    button.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            wm.removeView(tView);
+                            tView = null;
+                        }
+                    });
+                    Log.d("text",text);
+                    textView.setText(text);
+                }
             }
         });
 
         fab_before.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                before_button_push++;
                 if (count > 0) {
-                    if (MotoMediaPlayer.isPlaying()) {
+                    fab_text.setVisibility(View.INVISIBLE);
+                    if (tView != null) {
+                        wm.removeView(tView);
+                        tView = null;
+                    }
+                    if (MotoMediaPlayer != null && MotoMediaPlayer.isPlaying()) {
                         MotoMediaPlayer.stop();
                     }
                     count--;
+                    fab_url.setVisibility(View.INVISIBLE);
                     player();
+                } else {
+                    Toast.makeText(getApplicationContext(), "첫번째 화면입니다.",Toast.LENGTH_SHORT).show();
                 }
             }
         });
@@ -196,12 +289,30 @@ public class MyService extends Service {
         fab_next.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                next_button_push++;
                 if (count < educations_length - 1) {
-                    if (MotoMediaPlayer.isPlaying()) {
+                    fab_text.setVisibility(View.INVISIBLE);
+                    if (tView != null) {
+                        wm.removeView(tView);
+                        tView = null;
+                    }
+                    if (MotoMediaPlayer != null && MotoMediaPlayer.isPlaying()) {
                         MotoMediaPlayer.stop();
                     }
                     count++;
+                    fab_url.setVisibility(View.INVISIBLE);
                     player();
+                } else {
+                    Toast.makeText(getApplicationContext(), "마지막 화면입니다.",Toast.LENGTH_SHORT).show();
+                    ofswitch = false;
+                    if (MotoMediaPlayer != null && MotoMediaPlayer.isPlaying()) {
+                        MotoMediaPlayer.stop();
+                    }
+                    stopService(passedIntent);
+                    Intent intent = new Intent(getApplicationContext(),MainActivity.class);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    intent.putExtra("myservice",1);
+                    startActivity(intent);
                 }
             }
         });
@@ -209,7 +320,8 @@ public class MyService extends Service {
         fab_play.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (MotoMediaPlayer.isPlaying()) {
+                play_button_push++;
+                if (MotoMediaPlayer != null && MotoMediaPlayer.isPlaying()) {
                     MotoMediaPlayer.stop();
                 }
                if (ofswitch) {
@@ -234,6 +346,12 @@ public class MyService extends Service {
         showFab();
     }
 
+
+//    @Override
+//    public void onStart(Intent intent, int startId) {
+//        player();
+//    }
+
     public void autoplaying() {
 
     }
@@ -244,6 +362,8 @@ public class MyService extends Service {
         fab_again.animate().translationX(-getResources().getDimension(R.dimen.standard_155));
         fab_before.animate().translationX(-getResources().getDimension(R.dimen.standard_205));
         fab_play.animate().translationX(-getResources().getDimension(R.dimen.standard_255));
+        fab_url.animate().translationY(-getResources().getDimension(R.dimen.standard_305));
+        fab_text.animate().translationX(-getResources().getDimension(R.dimen.standard_305));
 
     }
 
@@ -254,17 +374,54 @@ public class MyService extends Service {
         fab_before.animate().translationX(0);
         fab_next.animate().translationX(0);
         fab_play.animate().translationX(0);
+        fab_text.animate().translationX(0);
+        fab_url.animate().translationY(0);
     }
     public void player() {
         if (painter != null && count != educations_length) {
+            Log.d("whathappened",count+"/"+painter.toString());
             wm.removeView(painter);
+            painter = null;
         }
         if(count < educations_length ) {
             education = educations.get(count);
+            if(education.getText().length() > 0) {
+                fab_text.setVisibility(View.VISIBLE);
+                if (tView == null) {
+                    tView = inflate2.inflate(R.layout.view_textservice, null);
+                }
+                wm.addView(tView, params);
+                TextView textView = tView.findViewById(R.id.textt);
+                TextView button = tView.findViewById(R.id.textt_button);
+                button.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        wm.removeView(tView);
+                        tView = null;
+                    }
+                });
+                textView.setText(education.getText());
+                text = education.getText();
+            }
+            if (education.getUrl().length() > 3) {
+                Intent intent = new Intent(Intent.ACTION_VIEW);
+                Uri uri = Uri.parse("https://" + education.getUrl());
+                intent.setData(uri);
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                try {
+                    startActivity(intent);
+                } catch (Exception e) {
+
+                }
+
+                fab_url.setVisibility(View.VISIBLE);
+            }
             a = education.getSoundPaint();
-            painter = new Painter(this);
-            painter.setDrawInformation(a);
-            wm.addView(painter, params2);
+            if(education.getSoundPaint()[3] != 0 && education.getSoundPaint()[4] != 0) {
+                painter = new Painter(this);
+                painter.setDrawInformation(a);
+                wm.addView(painter, params2);
+            }
             if (MotoMediaPlayer == null ) {
                 MotoMediaPlayer = new MediaPlayer();
             }
@@ -283,22 +440,34 @@ public class MyService extends Service {
                 e.printStackTrace();
             }
         }
+//        Handler handler = new Handler();
+//        handler.postDelayed(new Runnable() {
+//            @Override
+//            public void run() {
+//
+////                while (MotoMediaPlayer != null && MotoMediaPlayer.isPlaying()) {
+////                }
+//                if (ofswitch) {
+//                        fab_next.performClick();
+//                    } else {
+//                        return;
+//                    }
+//            }
+//        }, 10000);
+        try {
+            Thread.sleep(10000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         if (ofswitch) {
-            Handler handler = new Handler();
-            handler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    while (MotoMediaPlayer.isPlaying()) {
-
-                    }
-                    fab_next.performClick();
-                }
-            }, 3000);
+            fab_next.performClick();
         }
     }
 
+
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        sensorManager.registerListener(this,accelerometer,SensorManager.SENSOR_DELAY_NORMAL);
         passedIntent = intent;
         if (intent.hasExtra("contents_id")) {
             contents_id = intent.getIntExtra("contents_id",0);
@@ -308,28 +477,7 @@ public class MyService extends Service {
         }
         edu_result = intent.getStringExtra("edu");
         showResult(edu_result);
-//        final Handler handler = new Handler(Looper.getMainLooper());
-//        Runnable runnable = new Runnable() {
-//            @Override
-//            public void run() {
-//                while (ofswitch) {
-//                    Log.d("threadtt",count+":"+educations_length);
-//                    if (count < educations_length - 1) {
-//                        player();
-//                        count++;
-//                    }
-//                    else {
-//                        break;
-//                    }
-//                    try {
-//                        Thread.sleep(3000);
-//                    } catch (InterruptedException e) {
-//                        e.printStackTrace();
-//                    }
-//                }
-//            }
-//        };
-//        handler.postDelayed(runnable,0);
+        player();
         return super.onStartCommand(intent, flags, startId);
     }
 
@@ -345,7 +493,9 @@ public class MyService extends Service {
             for(int i=0;i<jsonArray.length();i++){
 
                 JSONObject item = jsonArray.getJSONObject(i);
-                Integer[] square = new Integer[8];
+                Integer[] square = new Integer[10];
+                String url = "";
+                String text = "";
 
                 int db_width = item.getInt("width");
                 int db_height = item.getInt("height");
@@ -368,12 +518,17 @@ public class MyService extends Service {
                 square[3] = new Integer((int) ((item.getInt("location2") * height_percent)));
                 square[4] = new Integer((int) ((item.getInt("location3") * width_percent)));
                 square[5] = new Integer((int) ((item.getInt("location4") * height_percent)));
-                square[6] = item.getInt("width");
-                square[7] = item.getInt("height");
+                square[6] = item.getInt("seconds");
+                square[7] = item.getInt("width");
+                square[8] = item.getInt("height");
+                url = item.getString("url");
+                text = item.getString("text");
 
                 Log.d("@################", id+"");
                 Education education = new Education();
                 education.setSoundPaint(square);
+                education.setUrl(url);
+                education.setText(text);
 
                 educations.add(education);
                 Log.d("*****************", String.valueOf(width_percent)+height_percent);
@@ -399,6 +554,9 @@ public class MyService extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
+        if (sensorManager != null) {
+            sensorManager.unregisterListener(this);
+        }
         if(wm != null) {
             if(mView != null) {
                 wm.removeView(mView);
@@ -413,6 +571,41 @@ public class MyService extends Service {
     }
 
 
+    @Override
+    public void onSensorChanged(SensorEvent event) {
+        float axisX = event.values[0];
+        float axisY = event.values[0];
+        float axisZ = event.values[0];
+
+        float gravityX = axisX / SensorManager.GRAVITY_EARTH;
+        float gravityY = axisY / SensorManager.GRAVITY_EARTH;
+        float gravityZ = axisZ / SensorManager.GRAVITY_EARTH;
+
+        Float f = gravityX * gravityX + gravityY * gravityY + gravityZ * gravityZ;
+        double squaredD = Math.sqrt(f.doubleValue());
+        float gForce = (float) squaredD;
+        if (gForce > SHAKE_THRESHOLD_GRAVITY) {
+            long currentTime = System.currentTimeMillis();
+            if(shakeTime + SHAKE_SKIP_TIME > currentTime) {
+                return;
+            }
+            shakeTime = currentTime;
+            if (visibility_switch) {
+                mView.setVisibility(View.GONE);
+                visibility_switch = false;
+            } else {
+                mView.setVisibility(View.VISIBLE);
+                visibility_switch = true;
+            }
+        }
+    }
+
+    @Override
+    public void onAccuracyChanged(Sensor sensor, int accuracy) {
+
+    }
+
+
 
     private class SingleTapConfirm extends GestureDetector.SimpleOnGestureListener {
 
@@ -421,5 +614,6 @@ public class MyService extends Service {
             return true;
         }
     }
+
 }
 

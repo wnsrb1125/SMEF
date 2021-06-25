@@ -11,7 +11,7 @@
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="400dp"
-        android:layout_height="wrap_content"
+        android:layout_height="200dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintBottom_toBottomOf="parent">
 
@@ -85,16 +85,46 @@
         <com.google.android.material.floatingactionbutton.FloatingActionButton
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
+            android:id="@+id/url_plus"
+            android:layout_width="@dimen/standard_30"
+            android:layout_height="@dimen/standard_30"
+            android:layout_margin="@dimen/standard_21"
+            app:fabSize="mini"
+            android:src="@drawable/ic_baseline_language_24"/>
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:id="@+id/fab_seconds"
+            android:layout_width="@dimen/standard_30"
+            android:layout_height="@dimen/standard_30"
+            android:layout_margin="@dimen/standard_21"
+            app:fabSize="mini"
+            android:src="@drawable/ic_baseline_access_time_24"/>
+<!--        <com.google.android.material.floatingactionbutton.FloatingActionButton-->
+<!--            app:layout_constraintEnd_toEndOf="parent"-->
+<!--            app:layout_constraintBottom_toBottomOf="parent"-->
+<!--            android:id="@+id/fab_text"-->
+<!--            android:layout_width="@dimen/standard_30"-->
+<!--            android:layout_height="@dimen/standard_30"-->
+<!--            android:layout_margin="@dimen/standard_21"-->
+<!--            app:fabSize="mini"-->
+<!--            android:src="@drawable/ic_baseline_text_rotation_none_24"/>-->
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
             android:id="@+id/fab_menu2"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_baseline_menu_24"/>
+
+
         <TextView
-            android:textSize="100dp"
+            android:textSize="80dp"
             android:text="0"
             android:id="@+id/number_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:layout_constraintBottom_toTopOf="@+id/fab_menu2"
+            app:layout_constraintBottom_toTopOf="@+id/url_plus"
             app:layout_constraintEnd_toEndOf="parent"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>

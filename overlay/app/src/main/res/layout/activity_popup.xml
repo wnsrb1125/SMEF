@@ -9,21 +9,25 @@
         android:layout_width="match_parent"
         android:layout_height="300dp"/>
     <Button
+        android:layout_marginTop="5dp"
         android:id="@+id/uploadImage"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="썸네일" />
+        android:text="썸네일 설정" />
     <EditText
         android:id="@+id/editText"
+        android:layout_marginTop="5dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:ems="10"
         android:inputType="textPersonName"
-        android:text="Name" />
+        android:hint="게시물의 제목을 입력하세요." />
 
     <Button
+        android:layout_marginTop="5dp"
         android:id="@+id/sendbt"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Button" />
+        android:text="확인" />
+
 </LinearLayout>

@@ -8,14 +8,23 @@ import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import android.util.Log
+import android.view.Menu
+import android.view.MenuItem
 import android.view.View
+import android.view.WindowManager
+import android.webkit.WebSettings
+import android.webkit.WebView
 import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import com.google.android.gms.ads.*
+import com.google.android.gms.ads.initialization.OnInitializationCompleteListener
 import com.google.android.gms.tasks.OnSuccessListener
 import com.google.firebase.dynamiclinks.FirebaseDynamicLinks
 import java.util.concurrent.ExecutionException
+import com.google.android.gms.ads.interstitial.InterstitialAd;
+import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback;
 
 class MainActivity : AppCompatActivity() {
     private val result: String? = null
@@ -23,14 +32,51 @@ class MainActivity : AppCompatActivity() {
     private var search_word: String? = null
     private var id = 0
     private var name = ""
-    private var uri = ""
+    private var uri = "nono"
     private var resultt = ""
     private var backKeyPressedTime: Long = 0
+    private var mInterstitialAd: InterstitialAd? = null
+    private final var TAG = "MainActivity"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        MobileAds.initialize(this@MainActivity){}
+        mInterstitialAd?.fullScreenContentCallback = object: FullScreenContentCallback() {
+            override fun onAdDismissedFullScreenContent() {
+                Log.d(TAG, "Ad was dismissed.")
+            }
+
+            override fun onAdFailedToShowFullScreenContent(adError: AdError?) {
+                Log.d(TAG, "Ad failed to show.")
+            }
+
+            override fun onAdShowedFullScreenContent() {
+                Log.d(TAG, "Ad showed fullscreen content.")
+                mInterstitialAd = null;
+            }
+        }
+        var adRequest = AdRequest.Builder().build()
+        InterstitialAd.load(this,"ca-app-pub-5645529602526796/5541822630", adRequest, object : InterstitialAdLoadCallback() {
+            override fun onAdFailedToLoad(adError: LoadAdError) {
+                Log.d(TAG, adError?.message)
+                mInterstitialAd = null
+            }
+
+            override fun onAdLoaded(interstitialAd: InterstitialAd) {
+                Log.d(TAG, "Ad was loaded.")
+                mInterstitialAd = interstitialAd
+            }
+        })
         if (intent.hasExtra("userid")) {
             id = intent.getIntExtra("userid",0)
+        }
+        if (intent.hasExtra("myservice")) {
+            if (mInterstitialAd != null) {
+                mInterstitialAd?.show(this)
+            } else {
+                Log.d("TAG", "The interstitial ad wasn't ready yet.")
+            }
+            finish()
         }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {   // 마시멜로우 이상일 경우
             if (!Settings.canDrawOverlays(this)) {              // 체크
@@ -41,15 +87,23 @@ class MainActivity : AppCompatActivity() {
         }
         setContentView(R.layout.activity_main)
         firstActivity = this@MainActivity
-        val bt_make = findViewById<View>(R.id.make) as Button
-        bt_make.setOnClickListener {
-            val intent = Intent(this@MainActivity, PopupActivity::class.java)
-            startActivityForResult(intent, 123)
-        }
+        val webView : WebView = findViewById<View>(R.id.webView) as WebView
+        //webView.webViewClient = WebViewClient()
+        //webView.webChromeClient = WebChromeClient()
+        webView.loadUrl("https://shelper3.azurewebsites.net/ad.html")
+
+        val webSetting : WebSettings = webView.settings
+        webSetting.javaScriptEnabled = true
+
         val editText = findViewById<EditText>(R.id.editText2)
         val search = findViewById<View>(R.id.search_button) as Button
         search.setOnClickListener {
-            val asyncSearch = AsyncSearch()
+            if (mInterstitialAd != null) {
+                mInterstitialAd?.show(this)
+            } else {
+                Log.d("TAG", "The interstitial ad wasn't ready yet.")
+            }
+            val asyncSearch = AsyncSearch(this@MainActivity)
             search_word = editText.text.toString()
             try {
                 result2 = asyncSearch.execute(search_word).get()
@@ -59,6 +113,7 @@ class MainActivity : AppCompatActivity() {
             val intent = Intent(this@MainActivity, SearchActivity::class.java)
             intent.putExtra("search_result", result2)
             intent.putExtra("userid",id)
+            intent.putExtra("search",search_word)
             startActivity(intent)
         }
         val favorites = findViewById<View>(R.id.favorite)
@@ -79,7 +134,38 @@ class MainActivity : AppCompatActivity() {
             intent.putExtra("userid",id)
             startActivity(intent)
         }
+        window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN)
        // handleDeepLink()
+    }
+
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        Log.d("createe","create")
+        val inflater = menuInflater
+        inflater.inflate(R.menu.main_menu, menu)
+        return true;
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.mycontents -> {
+
+                val asyncMycontents = AsyncMycontents()
+                val mycontent_result = asyncMycontents.execute(id.toString()).get()
+                val intent = Intent(this@MainActivity, MyActivity::class.java)
+                intent.putExtra("search_result", mycontent_result)
+                intent.putExtra("userid",id)
+                startActivity(intent)
+                true
+            }
+            R.id.makecontents -> {
+                val intent = Intent(this@MainActivity, PopupActivity::class.java)
+                startActivityForResult(intent, 123)
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
+
     }
 
     override fun onBackPressed() {
@@ -114,38 +200,11 @@ class MainActivity : AppCompatActivity() {
                 if (data != null) {
                     name = data!!.getStringExtra("name")
                     uri = data!!.getStringExtra("uri")
+                    Log.d("uri1",uri)
                     startMakeServ()
                 }
             }
         }
-    }
-
-    private fun handleDeepLink() {
-        FirebaseDynamicLinks.getInstance()
-                .getDynamicLink(intent)
-                .addOnSuccessListener(this, OnSuccessListener { pendingDynamicLinkData ->
-                    if (pendingDynamicLinkData == null) {
-                        Log.d("GAJA", "No have dynamic link")
-                        return@OnSuccessListener
-                    }
-                    val deepLink = pendingDynamicLinkData.link
-                    Log.d("GAJA", "deepLink: " + deepLink!!.getQueryParameter("tt"))
-                    val segment = deepLink.lastPathSegment
-                    Log.d("segment", segment)
-                    val task = AsyncTodo()
-                    try {
-                        resultt = task.execute("https://shelper3.azurewebsites.net/getjson.php?id=" + deepLink.getQueryParameter("tt"), "sound"+"&userid=" + id).get()
-                    } catch (e: ExecutionException) {
-                        e.printStackTrace()
-                    } catch (e: InterruptedException) {
-                        e.printStackTrace()
-                    }
-                    val intent = Intent(this@MainActivity, MyService::class.java)
-                    intent.putExtra("edu", resultt)
-                    intent.putExtra("id", id)
-                    startService(intent)
-                })
-                .addOnFailureListener(this) { e -> Log.w("TAG", "getDynamicLink:onFailure", e) }
     }
 
     companion object {

@@ -28,6 +28,9 @@ class AsyncLoginUpload : AsyncTask<String, Void?, Int?>() {
         var postParameters = "";
         postParameters += "kakaoid=" + parameters[0]
         postParameters += "&nickname=" + "'" +parameters[1] + "'"
+        postParameters += "&ageRange=" + "'" +parameters[2] + "'"
+        postParameters += "&gender=" + "'" +parameters[3] + "'"
+        postParameters += "&email=" + "'" +parameters[4] + "'"
         Log.d("poooo",postParameters);
         try {
             val url = URL("https://shelper3.azurewebsites.net/uploadLogin.php")

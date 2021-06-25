@@ -3,6 +3,13 @@
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text=""
+        android:textSize="30dp"
+        android:textStyle="bold"
+        android:id="@+id/popup_tv"/>
     <View
         android:layout_width="match_parent"
         android:layout_height="2px"
@@ -12,7 +19,7 @@
         android:id="@+id/img"
         android:layout_width="match_parent"
         android:layout_height="300dp"
-        android:src="@drawable/ic_android_black_24dp"/>
+        android:src="@drawable/teat"/>
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -29,8 +36,8 @@
 
         <Button
             android:id="@+id/share"
-            android:layout_marginLeft="10dp"
-            android:layout_marginRight="10dp"
+            android:layout_marginLeft="5dp"
+            android:layout_marginRight="5dp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"

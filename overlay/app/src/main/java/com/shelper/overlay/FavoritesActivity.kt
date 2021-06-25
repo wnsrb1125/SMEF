@@ -20,6 +20,7 @@ class FavoritesActivity : Activity() {
         var contents_id = 0
         var contents_userid = 0
         var contents_name = ""
+        var image_path = ""
         var views = 0
         var timestamp: String? = null
         var listViewAdapter: ListViewAdapter? = null
@@ -48,8 +49,9 @@ class FavoritesActivity : Activity() {
                     contents_userid = item.getInt("userid")
                     contents_name = item.getString("content_name")
                     views = item.getInt("views")
+                    image_path = item.getString("image_path")
                     timestamp = item.getString("created_at")
-                    listViewAdapter!!.addItem(ContextCompat.getDrawable(this, R.drawable.ic_baseline_account_circle_56), contents_name, contents_id, views, timestamp)
+                    listViewAdapter!!.addItem(ContextCompat.getDrawable(this, R.drawable.ic_baseline_account_circle_56), contents_name, contents_id, views, timestamp, image_path)
                 }
             } catch (e: JSONException) {
                 Toast.makeText(applicationContext,"즐겨찾기가 없습니다.",Toast.LENGTH_SHORT).show()
@@ -66,7 +68,7 @@ class FavoritesActivity : Activity() {
                  title : $title
                  desc : $desc
                  """.trimIndent()
-                val asyncPictureDownload = AsyncPictureDownload()
+                val asyncPictureDownload = AsyncPictureDownload(this@FavoritesActivity)
                 try {
                     pictureA = asyncPictureDownload.execute("https://shelper3.azurewebsites.net/downloadpic.php?id=" + item.id, "" + item.id).get()
                 } catch (e: ExecutionException) {
@@ -77,8 +79,10 @@ class FavoritesActivity : Activity() {
                 val intent = Intent(this@FavoritesActivity, InformationPopupActivity::class.java)
                 intent.putExtra("id", item.id)
                 intent.putExtra("userid", user_id)
+                intent.putExtra("contents_userid", contents_userid)
                 intent.putExtra("name", item.name)
                 intent.putExtra("picture", pictureA)
+                intent.putExtra("image_path", item.getImage_path())
                 startActivity(intent)
             }
         }

@@ -1,5 +1,7 @@
 package com.shelper.overlay;
 
+import android.app.ProgressDialog;
+import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
 
@@ -20,16 +22,25 @@ public class AsyncTodo extends AsyncTask<String, Void, String> {
     private ArrayList<Education> mArrayList = new ArrayList<Education>();
     private int id = 0;
     private String filepath = "";
+    Context context;
+    ProgressDialog dialog;
+
+    public AsyncTodo(Context context) {
+        this.context = context;
+
+    }
 
     @Override
     protected void onPreExecute() {
-        super.onPreExecute();
+        dialog = new ProgressDialog(context);
+        dialog.show();
     }
 
     @Override
     protected void onPostExecute(String result) {
         super.onPostExecute(result);
 
+        dialog.dismiss();
         if (result == null){
             Log.d(TAG,"여기까진됨###널"+result.toString());
         }

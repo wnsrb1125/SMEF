@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/mycontents"
+        android:title="내 게시물 목록" />
+    <item
+        android:id="@+id/makecontents"
+        android:title="컨텐츠 만들기" />
+</menu>

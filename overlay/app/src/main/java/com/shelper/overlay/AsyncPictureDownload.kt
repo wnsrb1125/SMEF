@@ -1,6 +1,8 @@
 package com.shelper.overlay
 
+import android.app.ProgressDialog
 import android.content.ContentValues
+import android.content.Context
 import android.os.AsyncTask
 import android.util.Log
 import java.io.BufferedReader
@@ -10,13 +12,27 @@ import java.io.InputStream
 import java.net.HttpURLConnection
 import java.net.URL
 
-class AsyncPictureDownload: AsyncTask<String,Void,String>()  {
+class AsyncPictureDownload(context: Context): AsyncTask<String,Void,String>()  {
+
+    var thisContext = context
+    lateinit var progress : ProgressDialog
+
+    override fun onPreExecute() {
+        progress = ProgressDialog(thisContext)
+        progress.show()
+    }
+
+    override fun onPostExecute(result: String?) {
+        progress.dismiss()
+    }
+
     override fun doInBackground(vararg params: String?): String {
         val line = ""
         val postParameters = ""
         val bufferedReader: BufferedReader? = null
         val downpic = params[1].toString() + ".jpg"
         var uri_string = "nope"
+
 
         try {
             val url = URL(params[0])
@@ -62,4 +78,6 @@ class AsyncPictureDownload: AsyncTask<String,Void,String>()  {
 
         return uri_string
     }
+
+
 }

@@ -11,101 +11,87 @@
 
 
     <androidx.constraintlayout.widget.ConstraintLayout
-        android:layout_width="310dp"
+        android:layout_width="380dp"
         android:layout_height="wrap_content"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
         android:id="@+id/lay">
 
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
-            android:id="@+id/fab_playing"
+            android:id="@+id/fab_texts"
             android:layout_width="@dimen/standard_45"
             android:layout_height="@dimen/standard_45"
             android:layout_margin="@dimen/standard_21"
             app:fabSize="mini"
-            android:src="@drawable/ic_baseline_pause_24"/>
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        android:id="@+id/fab_before"
-        android:layout_width="@dimen/standard_45"
-        android:layout_height="@dimen/standard_45"
-        android:layout_margin="@dimen/standard_21"
-        app:fabSize="mini"
-        android:src="@drawable/ic_chevron_left_black_24dp"/>
+            android:visibility="invisible"
+            android:src="@drawable/ic_baseline_text_rotation_none_24"/>
 
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        android:id="@+id/fab_next"
-        android:layout_width="@dimen/standard_45"
-        android:layout_height="@dimen/standard_45"
-        android:layout_margin="@dimen/standard_21"
-        app:fabSize="mini"
-        android:src="@drawable/ic_chevron_right_black_24dp"/>
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                android:id="@+id/fab_playing"
+                android:layout_width="@dimen/standard_45"
+                android:layout_height="@dimen/standard_45"
+                android:layout_margin="@dimen/standard_21"
+                app:fabSize="mini"
+                android:src="@drawable/ic_baseline_pause_24"/>
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:id="@+id/fab_before"
+            android:layout_width="@dimen/standard_45"
+            android:layout_height="@dimen/standard_45"
+            android:layout_margin="@dimen/standard_21"
+            app:fabSize="mini"
+            android:src="@drawable/ic_chevron_left_black_24dp"/>
 
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        android:id="@+id/fab_current"
-        android:layout_width="@dimen/standard_45"
-        android:layout_height="@dimen/standard_45"
-        android:layout_margin="@dimen/standard_21"
-        app:fabSize="mini"
-        android:src="@drawable/ic_loop_black_24dp"/>
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:id="@+id/fab_next"
+            android:layout_width="@dimen/standard_45"
+            android:layout_height="@dimen/standard_45"
+            android:layout_margin="@dimen/standard_21"
+            app:fabSize="mini"
+            android:src="@drawable/ic_chevron_right_black_24dp"/>
 
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        android:id="@+id/fab_cancel"
-        android:layout_width="@dimen/standard_45"
-        android:layout_height="@dimen/standard_45"
-        android:layout_margin="@dimen/standard_21"
-        app:fabSize="mini"
-        android:src="@drawable/ic_close_black_24dp"/>
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        android:id="@+id/fab_menu"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:src="@drawable/ic_android_black_24dp"/>
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:id="@+id/fab_current"
+            android:layout_width="@dimen/standard_45"
+            android:layout_height="@dimen/standard_45"
+            android:layout_margin="@dimen/standard_21"
+            app:fabSize="mini"
+            android:src="@drawable/ic_loop_black_24dp"/>
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:id="@+id/fab_cancel"
+            android:layout_width="@dimen/standard_45"
+            android:layout_height="@dimen/standard_45"
+            android:layout_margin="@dimen/standard_21"
+            app:fabSize="mini"
+            android:src="@drawable/ic_close_black_24dp"/>
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:id="@+id/fab_url"
+            android:layout_width="@dimen/standard_45"
+            android:layout_height="@dimen/standard_45"
+            android:layout_margin="@dimen/standard_21"
+            app:fabSize="mini"
+            android:src="@drawable/ic_baseline_language_24"
+            android:visibility="invisible"/>
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:id="@+id/fab_menu"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_baseline_menu_24"/>
     </androidx.constraintlayout.widget.ConstraintLayout>
-
-
-        <!--<TextView-->
-            <!--android:id="@+id/textV"-->
-            <!--android:layout_width="wrap_content"-->
-            <!--android:layout_height="wrap_content"-->
-            <!--android:text="ㅅㅅㅅㅅㅅㅅㅅ"/>-->
-        <!--<Button-->
-            <!--android:id="@+id/bt_before"-->
-            <!--android:layout_width="0dp"-->
-            <!--android:layout_weight="1"-->
-            <!--android:layout_height="wrap_content"-->
-            <!--android:text="before" />-->
-
-        <!--<Button-->
-            <!--android:id="@+id/bt_next"-->
-            <!--android:layout_width="0dp"-->
-            <!--android:layout_weight="1"-->
-            <!--android:layout_height="wrap_content"-->
-            <!--android:text="next" />-->
-
-        <!--<Button-->
-            <!--android:id="@+id/bt_exit"-->
-            <!--android:layout_width="0dp"-->
-            <!--android:layout_weight="1"-->
-            <!--android:layout_height="wrap_content"-->
-            <!--android:text="exit" />-->
-
-        <!--<Button-->
-            <!--android:id="@+id/bt_current"-->
-            <!--android:layout_width="0dp"-->
-            <!--android:layout_weight="1"-->
-            <!--android:layout_height="wrap_content"-->
-            <!--android:text="current" />-->
-
 </androidx.constraintlayout.widget.ConstraintLayout>

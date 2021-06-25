@@ -67,6 +67,7 @@ public class AsyncUpload extends AsyncTask<Education, Void, Void> {
         postParameters += "&width=" + widthPixel;
         postParameters += "&height=" + heightPixel;
         postParameters += "&content_name='" + name+"'";
+        Log.d("lllog", postParameters);
         try {
             URL url = new URL("https://shelper3.azurewebsites.net/upload.php");
             HttpURLConnection httpURLConnection = (HttpURLConnection)url.openConnection();
