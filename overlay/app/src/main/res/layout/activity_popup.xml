@@ -3,30 +3,44 @@
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <ImageView
-        android:src="@drawable/ic_baseline_image_not_supported_24"
-        android:id="@+id/tth"
-        android:layout_width="match_parent"
-        android:layout_height="300dp"/>
-    <Button
-        android:layout_marginTop="5dp"
-        android:id="@+id/uploadImage"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="썸네일 설정" />
     <EditText
         android:id="@+id/editText"
         android:layout_marginTop="5dp"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_width="350dp"
+        android:backgroundTint="@color/gray"
+        android:layout_height="40dp"
         android:ems="10"
         android:inputType="textPersonName"
-        android:hint="게시물의 제목을 입력하세요." />
+        android:textSize="18dp"
+        android:hint="게시물의 제목을 입력하세요."
+        android:background="@drawable/radius"
+        android:layout_gravity="center_horizontal"/>
 
+    <ImageView
+        android:src="@drawable/ic_baseline_image_not_supported_24"
+        android:id="@+id/tth"
+        android:layout_width="350dp"
+        android:layout_height="300dp"
+        android:layout_gravity="center_horizontal"/>
     <Button
         android:layout_marginTop="5dp"
+        android:textColor="@color/colorPrimary"
+        android:id="@+id/uploadImage"
+        android:layout_width="350dp"
+        android:layout_height="wrap_content"
+        android:background="@drawable/radius_rec"
+        android:text="썸네일 설정"
+        android:layout_gravity="center_horizontal"/>
+
+    <Button
+        android:background="@drawable/radius_rec"
+        android:backgroundTint="@color/colorPrimary"
+        android:textColor="@color/white2"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="5dp"
         android:id="@+id/sendbt"
-        android:layout_width="match_parent"
+        android:layout_width="350dp"
         android:layout_height="wrap_content"
         android:text="확인" />
 

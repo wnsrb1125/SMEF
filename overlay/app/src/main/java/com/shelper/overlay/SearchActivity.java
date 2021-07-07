@@ -41,6 +41,7 @@ public class SearchActivity extends Activity {
     private ListViewAdapter listViewAdapter;
     private Button searchButton;
     private EditText searchText;
+    private String result;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,19 +55,20 @@ public class SearchActivity extends Activity {
         searchButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String search_word = searchText.getText().toString();
-                AsyncSearch asyncSearch = new AsyncSearch(SearchActivity.this);
-                try {
-
-                    String result = asyncSearch.execute(search_word).get();
-                    listViewAdapter = new ListViewAdapter();
-                    listView.setAdapter(listViewAdapter);
-                    showResult(result);
-                    listViewAdapter.notifyDataSetChanged();
-                } catch (ExecutionException e) {
-                    e.printStackTrace();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
+                    String search_word = searchText.getText().toString();
+                    if (search_word.length() > 0) {
+                    AsyncSearch asyncSearch = new AsyncSearch(SearchActivity.this);
+                    try {
+                        result = asyncSearch.execute(search_word).get();
+                        listViewAdapter = new ListViewAdapter();
+                        listView.setAdapter(listViewAdapter);
+                        showResult(result);
+                        listViewAdapter.notifyDataSetChanged();
+                    } catch (ExecutionException e) {
+                        e.printStackTrace();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
                 }
             }
         });
@@ -108,7 +110,17 @@ public class SearchActivity extends Activity {
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+
+                String favoresult = "";
                 ListViewList item = (ListViewList) parent.getItemAtPosition(position);
+                AsyncFavorInfo asyncFavorInfo = new AsyncFavorInfo();
+                try {
+                    favoresult = asyncFavorInfo.execute(user_id, item.getId()).get();
+                } catch (ExecutionException e) {
+                    e.printStackTrace();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
 
                 String title = item.getName();
                 String desc = item.getId()+"";
@@ -116,25 +128,37 @@ public class SearchActivity extends Activity {
                 Drawable icon = item.getIconDrawable();
 
                 String str = "id : " + Long.toString(id) + "\r\ntitle : " + title + "\r\ndesc : " + desc;
-                AsyncPictureDownload asyncPictureDownload = new AsyncPictureDownload(SearchActivity.this);
-                try {
-                    pictureA = asyncPictureDownload.execute("https://shelper3.azurewebsites.net/downloadpic.php?id="+item.getId(),""+item.getId()).get();
-                } catch (ExecutionException e) {
-                    e.printStackTrace();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
                 Intent intent = new Intent(SearchActivity.this,InformationPopupActivity.class);
                 intent.putExtra("id",item.getId());
+                intent.putExtra("tf",favoresult);
                 intent.putExtra("userid", user_id);
                 intent.putExtra("contents_userid", contents_userid);
                 intent.putExtra("name",item.getName());
                 intent.putExtra("picture",pictureA);
                 intent.putExtra("image_path" ,item.getImage_path());
-                startActivity(intent);
+                startActivityForResult(intent,2222);
 
             }
         });
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == 2222) {
+            if (resultCode == 1125) {
+                String search_word = searchText.getText().toString();
+                AsyncSearch asyncSearch = new AsyncSearch(SearchActivity.this);
+                try {
+                    result = asyncSearch.execute(search_word).get();
+                } catch (ExecutionException e) {
+                    e.printStackTrace();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                showResult(result);
+                listViewAdapter.notifyDataSetChanged();
+            }
+        }
+    }
 }

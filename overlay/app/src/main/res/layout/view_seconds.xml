@@ -34,7 +34,7 @@
             android:layout_width="200dp"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:hint="초를 입력해주세요.(기본 10초)"
+            android:hint="초를 입력해주세요.(기본 5초)"
             android:inputType="number"
             android:digits="0123456789"/>
         <LinearLayout

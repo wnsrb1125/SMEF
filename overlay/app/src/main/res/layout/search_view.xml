@@ -5,32 +5,59 @@
     style="@style/att">
 
         <LinearLayout
-            android:layout_width="wrap_content"
+            android:layout_width="390dp"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:layout_gravity="center_horizontal"
+            android:orientation="horizontal"
+            android:layout_marginTop="10dp">
 
             <EditText
-            android:hint="검색어를 입력해주세요."
-            android:id="@+id/searchText"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="5dp" />
+                android:id="@+id/searchText"
+                android:layout_width="0dp"
+                android:layout_height="40dp"
+                android:layout_weight="8"
+                android:background="@drawable/radius"
+                android:backgroundTint="@color/gray"
+                android:hint=" 알고 싶은 기능을 입력해주세요."
+                android:layout_marginLeft="5dp" />
 
             <Button
-            android:text="검색"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/searchView"/>
+                android:text="검색"
+                android:textColor="@color/white2"
+                android:background="@drawable/radius"
+                android:backgroundTint="@color/colorPrimary"
+                android:layout_weight="2"
+                android:textSize="18dp"
+                android:layout_width="0dp"
+                android:layout_height="40dp"
+                android:layout_marginStart="8dp"
+                android:layout_marginLeft="8dp"
+                android:layout_marginBottom="8dp"
+                android:id="@+id/searchView"/>
         </LinearLayout>
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="2px"
-        android:layout_marginTop="5dp"
-        android:background="#FF000000"/>
+    <LinearLayout
+        android:layout_width="390dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_height="wrap_content">
+        <TextView
+            android:text="제목"
+            android:textSize="15dp"
+            android:layout_width="0dp"
+            android:layout_weight="8"
+            android:layout_height="wrap_content" />
+        <TextView
+            android:text="조회수"
+            android:textSize="15dp"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content" />
+    </LinearLayout>
     <ListView
         android:id="@+id/list_view"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_width="390dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_height="wrap_content"
+        android:dividerHeight="4dp">
 
     </ListView>
 

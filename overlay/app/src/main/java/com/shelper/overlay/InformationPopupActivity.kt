@@ -2,12 +2,17 @@ package com.shelper.overlay
 
 import android.app.Activity
 import android.app.AlertDialog
+import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.media.projection.MediaProjectionManager
 import android.net.Uri
+import android.os.AsyncTask
+import android.os.Build
 import android.os.Bundle
 import android.os.Handler
-import android.provider.MediaStore
 import android.util.Log
 import android.view.View
 import android.view.Window
@@ -19,23 +24,33 @@ import com.google.android.gms.ads.interstitial.InterstitialAd
 import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback
 import com.google.firebase.dynamiclinks.DynamicLink.*
 import com.google.firebase.dynamiclinks.FirebaseDynamicLinks
+import java.io.IOException
+import java.net.MalformedURLException
+import java.net.URL
+
 
 class InformationPopupActivity : Activity() {
     var resultt: String? = null
     var id = 0
     var userid = 0;
     var contents_userid = 0;
-    var picture_address = ""
     var name = ""
+    var tf = ""
     var image_path : String = "www"
     private var mInterstitialAd: InterstitialAd? = null
     private final var TAG = "infopop"
+    private lateinit var mpm :MediaProjectionManager;
+    private var projection = 0;
+    lateinit var imageView : ImageView;
+
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         requestWindowFeature(Window.FEATURE_CUSTOM_TITLE)
         setContentView(R.layout.activity_infopop)
-        val imageView = findViewById<ImageView>(R.id.img)
+
+        imageView = findViewById<ImageView>(R.id.img)
         val execute_button = findViewById<Button>(R.id.execute)
         val share_button = findViewById<Button>(R.id.share)
         var favorite_button = findViewById<Button>(R.id.addfavorite)
@@ -43,27 +58,36 @@ class InformationPopupActivity : Activity() {
         var tv = findViewById<View>(R.id.popup_tv) as TextView
         val getIntent = intent
 
+        tf = getIntent.getStringExtra("tf")
         image_path = getIntent.getStringExtra("image_path")
         id = getIntent.getIntExtra("id", 0)
         name = getIntent.getStringExtra("name")
-        picture_address = getIntent.getStringExtra("picture")
         userid = getIntent.getIntExtra("userid",0)
         contents_userid = getIntent.getIntExtra("contents_userid",0)
         if (userid == contents_userid) {
             delete_button.visibility = View.VISIBLE
         }
+        if (tf == "true") {
+            favorite_button.setText("즐찾해제")
+        } else {
+            favorite_button.setText("즐찾")
+        }
         Log.d("asdasd1",image_path)
         tv.setText("제목: "+ name)
-        if (picture_address != "nope") {
-            var uri:Uri = Uri.parse(picture_address)
-            val bitmap = MediaStore.Images.Media.getBitmap(contentResolver,uri)
-            imageView?.setImageBitmap(bitmap)
+
+        if (image_path.length > 5) {
+            var picture = AsyncPictureDownload()
+            var bmp = picture.execute(image_path).get()
+            imageView.setImageBitmap(bmp)
         }
         favorite_button.setOnClickListener {
+            if (favorite_button.text == "즐찾") {
+                favorite_button.setText("즐찾해제")
+            } else {
+                favorite_button.setText("즐찾")
+            }
             val asyncAddFavorites = AsyncAddFavorites()
             asyncAddFavorites.execute(id.toString(),userid.toString())
-            finish()
-
         }
         delete_button.setOnClickListener{
             var dlg = AlertDialog.Builder(this@InformationPopupActivity)
@@ -71,6 +95,9 @@ class InformationPopupActivity : Activity() {
             dlg.setPositiveButton("확인", DialogInterface.OnClickListener { dialog, which ->
                 var asyncDelete = AsyncDeleteContents()
                 asyncDelete.execute(id.toString())
+                val intent = Intent()
+                setResult(1125, intent)
+                finish()
             })
             dlg.setNegativeButton("취소", DialogInterface.OnClickListener { dialog, which ->
 
@@ -117,15 +144,71 @@ class InformationPopupActivity : Activity() {
                 e.printStackTrace()
             }
             startServ(id)
+            //startProjection()
+//            mpm = getSystemService(MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
+//            startActivityForResult(mpm.createScreenCaptureIntent(),9410)
         }
         share_button.setOnClickListener { DoDynamicLink() }
     }
 
+    private fun startProjection() {
+        val mProjectionManager =
+            getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
+        startActivityForResult(mProjectionManager.createScreenCaptureIntent(), 9410)
+    }
+
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        if(requestCode == 9410) {
+            if (resultCode == Activity.RESULT_OK) {
+                val intent = Intent(this@InformationPopupActivity, MyService::class.java)
+                intent.putExtra("edu", resultt)
+                intent.putExtra("contents_id", id)
+                intent.putExtra("RESULT_CODE", resultCode)
+                intent.putExtra("DATA", data)
+                var handler = Handler()
+                handler.postDelayed(Runnable {
+                    if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        startForegroundService(intent)
+                    } else {
+                        startService(intent)
+                    }
+                },500)
+
+//                Log.d("dang",resultCode.toString() +"/"+data)
+//                var mediaProjection = mpm.getMediaProjection(resultCode, data!!);
+//                val callback: MediaProjection.Callback = object : MediaProjection.Callback() {
+//                    override fun onStop() {
+//                        super.onStop()
+//                        mediaProjection.unregisterCallback(this)
+//                        mediaProjection = null
+//                    }
+//                }
+//                mediaProjection.registerCallback(callback, null);
+//                val displayMetrics = Resources.getSystem().getDisplayMetrics()
+//                var imagereader = ImageReader.newInstance(displayMetrics.widthPixels, displayMetrics.heightPixels,ImageFormat.RGB_565, 2)
+//                mediaProjection.createVirtualDisplay("sample",
+//                    displayMetrics.widthPixels, displayMetrics.heightPixels, displayMetrics.densityDpi, DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR,
+//                    imagereader.surface,null,null)
+//
+//                val bmp = Bitmap.createBitmap(
+//                    displayMetrics.widthPixels,
+//                    displayMetrics.heightPixels,
+//                    Bitmap.Config.RGB_565
+//                )
+            }
+        }
+    }
     private fun startServ(id: Int) {
         val intent = Intent(this@InformationPopupActivity, MyService::class.java)
         intent.putExtra("edu", resultt)
         intent.putExtra("contents_id", id)
         startService(intent)
+//        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+//            startForegroundService(intent)
+//        } else {
+//            startService(intent)
+//        }
     }
 
 

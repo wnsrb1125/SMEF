@@ -1,5 +1,8 @@
 package com.shelper.overlay;
 
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
@@ -9,13 +12,14 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.hardware.display.VirtualDisplay;
+import android.media.ImageReader;
 import android.media.MediaPlayer;
+import android.media.projection.MediaProjection;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
-import android.os.Looper;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Display;
@@ -26,22 +30,18 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewTreeObserver;
 import android.view.WindowManager;
-import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import androidx.constraintlayout.widget.ConstraintLayout;
-
+import androidx.core.app.NotificationCompat;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.concurrent.ExecutionException;
 
 import static android.content.ContentValues.TAG;
@@ -49,8 +49,8 @@ import static android.content.ContentValues.TAG;
 public class MyService extends Service implements SensorEventListener {
 
     private long shakeTime;
-    private static final int SHAKE_SKIP_TIME = 500;
-    private static final float SHAKE_THRESHOLD_GRAVITY = 2.5F;
+    private static final int SHAKE_SKIP_TIME = 300;
+    private static final float SHAKE_THRESHOLD_GRAVITY = 2.3F;
     private int educations_length;
     private ArrayList<Education> educations = new ArrayList<Education>();
     private int count = 0;
@@ -70,7 +70,7 @@ public class MyService extends Service implements SensorEventListener {
     private Intent passedIntent;
     private int passedId;
     private int contents_id;
-    private int mWidth;
+    private int mWidths;
     private WindowManager.LayoutParams params;
     private WindowManager.LayoutParams params2;
     private WindowManager.LayoutParams paramsk;
@@ -94,6 +94,15 @@ public class MyService extends Service implements SensorEventListener {
     private Sensor accelerometer;
     LayoutInflater inflate2;
     private boolean visibility_switch = true;
+    private int duration = 0;
+    private Handler handler;
+    private Runnable runnable;
+    private DisplayMetrics dm;
+    private MediaProjection mMediaProjection;
+    private ImageReader mImageReader;
+    private VirtualDisplay mVirtualDisplay;
+    private int result_code;
+    private Intent data;
 
 
 
@@ -105,6 +114,7 @@ public class MyService extends Service implements SensorEventListener {
     @Override
     public void onCreate() {
         super.onCreate();
+        handler = new Handler();
         start_time = (int) (System.currentTimeMillis() / 1000);
         inflate2  = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         LayoutInflater inflate = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
@@ -153,7 +163,7 @@ public class MyService extends Service implements SensorEventListener {
             public void onGlobalLayout() {
                 constraintLayout.getViewTreeObserver().removeGlobalOnLayoutListener(this);
                 int width = constraintLayout.getMeasuredWidth();
-                mWidth = size.x - width;
+                mWidths = size.x - width;
             }
         });
         fab_menu.setOnTouchListener(new View.OnTouchListener() {
@@ -163,14 +173,7 @@ public class MyService extends Service implements SensorEventListener {
             private float initialTouchY;
             @Override
             public boolean onTouch(View v, MotionEvent event) {
-                if (gestureDetector.onTouchEvent(event)) {
-                   if (!isFabOpen) {
-                       showFab();
-                   }
-                   else {
-                       closeFab();
-                   }
-                }else {
+                if (!gestureDetector.onTouchEvent(event)) {
                     switch (event.getAction()) {
                         case MotionEvent.ACTION_DOWN:
                             initialX = paramsk.x;
@@ -186,8 +189,8 @@ public class MyService extends Service implements SensorEventListener {
                             if ((Math.abs(xDiff) < 5) && (Math.abs(yDiff) < 5)) {
                                 //close the service and remove the fab view
                             }
-                            int middle = mWidth / 2;
-                            float nearestXwall = paramsk.x >= middle ? mWidth : 0;
+                            int middle = mWidths / 2;
+                            float nearestXwall = paramsk.x >= middle ? mWidths : 0;
                             paramsk.x = (int) nearestXwall;
                             wm.updateViewLayout(mView, paramsk);
 
@@ -200,6 +203,8 @@ public class MyService extends Service implements SensorEventListener {
                             paramsk.y = initialY + yDiff2;
                             wm.updateViewLayout(mView, paramsk);
                     }
+                }else {
+
                 }
                     return false;
             }
@@ -231,6 +236,7 @@ public class MyService extends Service implements SensorEventListener {
         fab_again.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
                 again_button_push++;
                 if (tView != null) {
                     wm.removeView(tView);
@@ -269,6 +275,7 @@ public class MyService extends Service implements SensorEventListener {
             public void onClick(View v) {
                 before_button_push++;
                 if (count > 0) {
+                    handler.removeCallbacks(runnable);
                     fab_text.setVisibility(View.INVISIBLE);
                     if (tView != null) {
                         wm.removeView(tView);
@@ -291,6 +298,7 @@ public class MyService extends Service implements SensorEventListener {
             public void onClick(View v) {
                 next_button_push++;
                 if (count < educations_length - 1) {
+                    handler.removeCallbacks(runnable);
                     fab_text.setVisibility(View.INVISIBLE);
                     if (tView != null) {
                         wm.removeView(tView);
@@ -320,6 +328,7 @@ public class MyService extends Service implements SensorEventListener {
         fab_play.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                handler.removeCallbacks(runnable);
                 play_button_push++;
                 if (MotoMediaPlayer != null && MotoMediaPlayer.isPlaying()) {
                     MotoMediaPlayer.stop();
@@ -347,14 +356,26 @@ public class MyService extends Service implements SensorEventListener {
     }
 
 
-//    @Override
-//    public void onStart(Intent intent, int startId) {
-//        player();
-//    }
+    public void startF() {
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this,"phoneteacher");
+        builder.setSmallIcon(R.mipmap.ic_launcher_foreground);
+        builder.setContentTitle("폰선생 서비스");
+        builder.setContentText("폰선생 서비스 실행 중");
 
-    public void autoplaying() {
+        Intent notification = new Intent(this,InformationPopupActivity.class);
+        PendingIntent pendingIntent = PendingIntent.getActivity(this,0,notification,0);
+        builder.setContentIntent(pendingIntent);
 
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+            manager.createNotificationChannel(new NotificationChannel("phoneteacher","기본 채널", NotificationManager.IMPORTANCE_DEFAULT));
+        }
+        startForeground(1, builder.build());
     }
+
+
+
+
     public void showFab() {
         isFabOpen=true;
         fab_close.animate().translationX(-getResources().getDimension(R.dimen.standard_55));
@@ -367,19 +388,19 @@ public class MyService extends Service implements SensorEventListener {
 
     }
 
-    public void closeFab() {
-        isFabOpen=false;
-        fab_again.animate().translationX(0);
-        fab_close.animate().translationX(0);
-        fab_before.animate().translationX(0);
-        fab_next.animate().translationX(0);
-        fab_play.animate().translationX(0);
-        fab_text.animate().translationX(0);
-        fab_url.animate().translationY(0);
-    }
+//    public void closeFab() {
+//        isFabOpen=false;
+//
+//        fab_again.animate().translationX(0);
+//        fab_close.animate().translationX(0);
+//        fab_before.animate().translationX(0);
+//        fab_next.animate().translationX(0);
+//        fab_play.animate().translationX(0);
+//        fab_text.animate().translationX(0);
+//        fab_url.animate().translationY(0);
+//    }
     public void player() {
         if (painter != null && count != educations_length) {
-            Log.d("whathappened",count+"/"+painter.toString());
             wm.removeView(painter);
             painter = null;
         }
@@ -419,6 +440,7 @@ public class MyService extends Service implements SensorEventListener {
             a = education.getSoundPaint();
             if(education.getSoundPaint()[3] != 0 && education.getSoundPaint()[4] != 0) {
                 painter = new Painter(this);
+                painter.setDensity(dm.density);
                 painter.setDrawInformation(a);
                 wm.addView(painter, params2);
             }
@@ -435,46 +457,103 @@ public class MyService extends Service implements SensorEventListener {
             try {
                 MotoMediaPlayer.setDataSource(MyService.this, Uri.parse(media_path+contents_id+"/"+count+".m4a"));
                 MotoMediaPlayer.prepare();
+                duration = MotoMediaPlayer.getDuration();
                 MotoMediaPlayer.start();
+
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
-//        Handler handler = new Handler();
-//        handler.postDelayed(new Runnable() {
-//            @Override
-//            public void run() {
-//
-////                while (MotoMediaPlayer != null && MotoMediaPlayer.isPlaying()) {
-////                }
-//                if (ofswitch) {
-//                        fab_next.performClick();
-//                    } else {
-//                        return;
-//                    }
-//            }
-//        }, 10000);
-        try {
-            Thread.sleep(10000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        if (ofswitch) {
-            fab_next.performClick();
-        }
+        runnable = new Runnable() {
+            @Override
+            public void run() {
+                Log.d("susu",duration+"");
+                if (ofswitch) {
+                    fab_next.performClick();
+                } else {
+                    return;
+                }
+            }
+        };
+        handler.postDelayed(runnable, education.getSoundPaint()[6] * 1000 +  duration);
     }
-
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        sensorManager.registerListener(this,accelerometer,SensorManager.SENSOR_DELAY_NORMAL);
-        passedIntent = intent;
+        if (intent.hasExtra("RESULT_CODE")) {
+            result_code = intent.getIntExtra("RESULT_CODE",0);
+        }
+        if (intent.hasExtra("DATA")) {
+            data = intent.getParcelableExtra("DATA");
+        }
         if (intent.hasExtra("contents_id")) {
             contents_id = intent.getIntExtra("contents_id",0);
         }
         if (intent.hasExtra("id")) {
             passedId = intent.getIntExtra("id",0);
         }
+//        startF();
+//        MediaProjectionManager mpManager =
+//                (MediaProjectionManager) getSystemService(Context.MEDIA_PROJECTION_SERVICE);
+//        if (mMediaProjection == null) {
+//            mMediaProjection = mpManager.getMediaProjection(result_code, data);
+//        }
+//        MediaProjection.Callback callback = new MediaProjection.Callback() {
+//            @Override
+//            public void onStop() {
+//                super.onStop();
+//            }
+//        };
+//        mMediaProjection.registerCallback(callback,null);
+//        mImageReader = ImageReader.newInstance(dm.widthPixels,dm.heightPixels,
+//                ImageFormat.RGB_565,5);
+//        mMediaProjection.createVirtualDisplay("mirror",
+//                dm.widthPixels, dm.heightPixels, dm.densityDpi,
+//                DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR,
+//                mImageReader.getSurface(),null,null);
+
+
+//        HandlerThread thread = new HandlerThread("CameraPicture");
+//        thread.start();
+//        final Handler backgroudHandler = new Handler(thread.getLooper());
+//        mImageReader.setOnImageAvailableListener(new ImageReader.OnImageAvailableListener() {
+//            @Override
+//            public void onImageAvailable(ImageReader reader) {
+//                Image image = null;
+//                FileOutputStream fos = null;
+//                Bitmap bitmap = null;
+//
+//                try {
+//                    image = mImageReader.acquireLatestImage();
+//                    fos = new FileOutputStream(getFilesDir() + "/myscreen.jpg");
+//                    final Image.Plane[] planes = image.getPlanes();
+//                    final Buffer buffer = planes[0].getBuffer().rewind();
+//                    bitmap = Bitmap.createBitmap(dm.widthPixels, dm.heightPixels, Bitmap.Config.ARGB_8888);
+//                    bitmap.copyPixelsFromBuffer(buffer);
+//                    bitmap.compress(Bitmap.CompressFormat.JPEG, 100, fos);
+//
+//                } catch (Exception e) {
+//                    e.printStackTrace();
+//                } finally {
+//                    if (fos!=null) {
+//                        try {
+//                            fos.close();
+//                        } catch (IOException ioe) {
+//                            ioe.printStackTrace();
+//                        }
+//                    }
+//
+//                    if (bitmap!=null)
+//                        bitmap.recycle();
+//
+//                    if (image!=null)
+//                        image.close();
+//                }
+//            }
+//        },backgroudHandler);
+
+        sensorManager.registerListener(this,accelerometer,SensorManager.SENSOR_DELAY_NORMAL);
+        passedIntent = intent;
         edu_result = intent.getStringExtra("edu");
         showResult(edu_result);
         player();
@@ -482,9 +561,8 @@ public class MyService extends Service implements SensorEventListener {
     }
 
     public ArrayList<Education> showResult(String mJsonString) {
-        Log.d("씨발",mJsonString);
         String TAG_JSON="webnautes";
-        DisplayMetrics dm = getResources().getDisplayMetrics();
+        dm = getResources().getDisplayMetrics();
 
         try {
             JSONObject jsonObject = new JSONObject(mJsonString);
@@ -614,6 +692,7 @@ public class MyService extends Service implements SensorEventListener {
             return true;
         }
     }
+
 
 }
 

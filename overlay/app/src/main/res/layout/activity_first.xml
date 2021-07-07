@@ -16,7 +16,7 @@
         android:fontFamily="@font/kotra"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="쉽고 빠르게 배우는 스마트폰"
+        android:text="스마트폰, 아들 딸 없이도 쓰자!"
         android:textSize="30dp"
         android:layout_gravity="center"
         android:textColor="@color/white2"/>

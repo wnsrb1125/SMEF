@@ -1,15 +1,18 @@
 package com.shelper.overlay;
 
-import android.app.AlertDialog;
 import android.app.Service;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.graphics.PixelFormat;
 import android.graphics.Point;
 import android.media.MediaPlayer;
 import android.media.MediaRecorder;
+import android.media.projection.MediaProjection;
+import android.media.projection.MediaProjectionManager;
+import android.net.Uri;
 import android.os.Build;
+import android.os.Environment;
 import android.os.IBinder;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -25,11 +28,13 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+
 import androidx.constraintlayout.widget.ConstraintLayout;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -54,6 +59,7 @@ public class MakeService extends Service {
     private View uploadView;
     private View secondView;
     private View textView;
+    private View captureView;
     private MediaPlayer mediaPlayer;
     private Intent passedIntent;
     float START_X2 = 0;
@@ -110,7 +116,11 @@ public class MakeService extends Service {
     private int userid;
     private String url = "";
     private String text = "";
-    private int seconds = 10;
+    private int seconds = 5;
+    private FileOutputStream out;
+    private MediaProjectionManager mediaProjectionManager;
+
+
 
 
     private View.OnTouchListener touchListener = new View.OnTouchListener() {
@@ -193,6 +203,8 @@ public class MakeService extends Service {
 
     public void onCreate() {
         super.onCreate();
+        mediaProjectionManager = (MediaProjectionManager)getSystemService(Context.MEDIA_PROJECTION_SERVICE);
+
         inflate = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         now = System.currentTimeMillis();
         simpleDateFormat = new SimpleDateFormat("yyyyMMdd");
@@ -369,7 +381,7 @@ public class MakeService extends Service {
                             painterMap.remove(count);
                         }
                     }
-                    seconds = 10;
+                    seconds = 5;
                     url = "";
                     text = "";
                     count--;
@@ -425,7 +437,7 @@ public class MakeService extends Service {
                     }
                     url = "";
                     text = "";
-                    seconds = 10;
+                    seconds = 5;
                     again = 0;
                     count++;
                     if (biggestValue < count) {
@@ -780,6 +792,27 @@ public class MakeService extends Service {
             }
         });
 
+    }
+
+    private void onCap(Bitmap bm) throws Exception {
+        String imgFile = "save.jpg"; // 저장파일명
+        StringBuffer imgPath = new StringBuffer("data/data/com.shelper.overlay/"); // 저장경로
+        File saveFile = new File(imgPath.toString());
+        try {
+            if(!saveFile.isDirectory()) {
+                saveFile.mkdirs();
+            }
+            imgPath.append(imgFile);
+            out = new FileOutputStream(imgPath.toString()); // 저장경로 + 파일명
+            bm.compress(Bitmap.CompressFormat.JPEG, 100, out);
+            sendBroadcast(new Intent(Intent.ACTION_MEDIA_MOUNTED, Uri.parse("file://" + Environment.getExternalStorageDirectory())));
+        } catch (Exception e) {
+        } finally {
+            if(out != null) {
+                out.close();
+            }
+            saveFile = null;
+        }
     }
 
     public void showFab() {

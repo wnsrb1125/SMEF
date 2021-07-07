@@ -22,12 +22,11 @@ class AsyncFileUpload : AsyncTask<String, Void?, Boolean>() {
     private val CacheDeleteContext: Context? = null
     var serverResponseCode = 0
     override fun doInBackground(postParameters: Array<String>): Boolean {
+        var true_parameter = 1;
+        if (postParameters[1].length < 3) {
+            true_parameter = 0;
+        }
         try {
-            Log.d("uri3",postParameters[1]);
-            var true_parameter = 1;
-            if (postParameters[1] == "nono") {
-                true_parameter = 0;
-            }
             val filename = postParameters[0]
             val filename2 = postParameters[1]
             val file = File(filename)
@@ -75,9 +74,15 @@ class AsyncFileUpload : AsyncTask<String, Void?, Boolean>() {
             dos.writeBytes(twoHyphens + boundary + twoHyphens + lineEnd)
             inputStream.close()
             dos.flush()
+            if(true_parameter == 0) {
+                serverResponseCode = httpURLConnection.responseCode
+                val serverResponseMessage = httpURLConnection.responseMessage
+                Log.i("uploadFile", "HTTP Response is : "
+                        + serverResponseMessage + ": " + serverResponseCode)
+            }
 
             //2
-            if(postParameters[1] != "nono") {
+            if(true_parameter == 1) {
                 val file2 = File(filename2)
                 val inputStream2: InputStream = FileInputStream(file2)
                 dos.writeBytes(twoHyphens + boundary + lineEnd)
@@ -99,12 +104,12 @@ class AsyncFileUpload : AsyncTask<String, Void?, Boolean>() {
                 dos.writeBytes(twoHyphens + boundary + twoHyphens + lineEnd)
                 inputStream2.close()
                 dos.flush()
-                dos.close()
                 serverResponseCode = httpURLConnection.responseCode
                 val serverResponseMessage = httpURLConnection.responseMessage
                 Log.i("uploadFile", "HTTP Response is : "
                         + serverResponseMessage + ": " + serverResponseCode)
             }
+            dos.close()
         } catch (e: Exception) {
             Log.d(ContentValues.TAG, "InsertData: Error ", e)
             return false

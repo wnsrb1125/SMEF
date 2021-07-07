@@ -1,64 +1,82 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical" android:layout_width="match_parent"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
     android:layout_height="match_parent">
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text=""
-        android:textSize="30dp"
+        android:textSize="25dp"
+        android:layout_gravity="center_horizontal"
         android:textStyle="bold"
         android:id="@+id/popup_tv"/>
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="2px"
 
-        />
     <ImageView
+        android:layout_marginTop="10dp"
         android:id="@+id/img"
         android:layout_width="match_parent"
-        android:layout_height="300dp"
+        android:layout_height="250dp"
         android:src="@drawable/teat"/>
 
     <LinearLayout
-        android:layout_width="match_parent"
+        android:layout_marginTop="10dp"
+        android:layout_width="350dp"
+        android:layout_gravity="center_horizontal"
         android:layout_height="wrap_content"
-        android:layout_weight="3"
         android:orientation="horizontal">
 
         <Button
-            android:id="@+id/execute"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="실행" />
-
-        <Button
             android:id="@+id/share"
-            android:layout_marginLeft="5dp"
+            android:textColor="@color/colorPrimary"
+            android:background="@drawable/radius_rec"
             android:layout_marginRight="5dp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="공유" />
+            android:text="공유하기"
+            android:textSize="18dp"/>
 
         <Button
+            android:background="@drawable/radius_rec"
             android:id="@+id/addfavorite"
+            android:textColor="@color/colorPrimary"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="즐찾" />
+            android:text="즐겨찾기"
+            android:textSize="18dp"/>
         
 
     </LinearLayout>
 
-    <Button
-        android:visibility="invisible"
-        android:layout_marginTop="10dp"
-        android:id="@+id/delete"
-        android:layout_width="match_parent"
+    <LinearLayout
+        android:layout_width="350dp"
+        android:layout_gravity="center_horizontal"
         android:layout_height="wrap_content"
-        android:text="삭제" />
+        android:orientation="vertical">
+        <Button
+            android:id="@+id/execute"
+            android:layout_marginTop="10dp"
+            android:textColor="@color/white2"
+            android:background="@drawable/radius_rec"
+            android:backgroundTint="@color/colorPrimary"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="실행"
+            android:textSize="18dp"/>
+
+        <Button
+            android:visibility="invisible"
+            android:textColor="@color/colorPrimary"
+            android:background="@drawable/radius_rec"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="10dp"
+            android:id="@+id/delete"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="18dp"
+            android:text="삭제" />
+    </LinearLayout>
 
 </LinearLayout>

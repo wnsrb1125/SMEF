@@ -29,7 +29,6 @@ public class AsyncUpload extends AsyncTask<Education, Void, Void> {
     private int widthPixel = 0;
     private int heightPixel = 0;
 
-
     @Override
     protected void onPreExecute() {
         super.onPreExecute();

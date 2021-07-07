@@ -28,6 +28,8 @@ class RecentActivity: Activity() {
     var timestamp: String? = null
     var listViewAdapter: ListViewAdapter? = null
     var searchText: EditText? = null
+    var recents_result = "";
+    var favoresult = "";
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -45,7 +47,7 @@ class RecentActivity: Activity() {
             val asyncdeleterecents = AsyncDeleteRecents()
             var result = asyncdeleterecents.execute(user_id.toString()).get()
             val asyncRecents = AsyncRecents()
-            val recents_result = asyncRecents.execute(user_id.toString()).get()
+            recents_result = asyncRecents.execute(user_id.toString()).get()
             showResult(recents_result);
             listViewAdapter!!.notifyDataSetChanged()
         }
@@ -72,7 +74,16 @@ class RecentActivity: Activity() {
             Log.d(ContentValues.TAG, "showResult : ", e)
         }
         listView!!.onItemClickListener = AdapterView.OnItemClickListener { parent, view, position, id ->
+
             val item = parent.getItemAtPosition(position) as ListViewList
+            val asyncFavorInfo = AsyncFavorInfo()
+            try {
+                favoresult = asyncFavorInfo.execute(user_id, item.getId()).get()
+            } catch (e: ExecutionException) {
+                e.printStackTrace()
+            } catch (e: InterruptedException) {
+                e.printStackTrace()
+            }
             val title = item.name
             val desc = item.id.toString() + ""
             var pictureA = ""
@@ -82,22 +93,28 @@ class RecentActivity: Activity() {
                  title : $title
                  desc : $desc
                  """.trimIndent()
-            val asyncPictureDownload = AsyncPictureDownload(this@RecentActivity)
-            try {
-                pictureA = asyncPictureDownload.execute("https://shelper3.azurewebsites.net/downloadpic.php?id=" + item.id, "" + item.id).get()
-            } catch (e: ExecutionException) {
-                e.printStackTrace()
-            } catch (e: InterruptedException) {
-                e.printStackTrace()
-            }
             val intent = Intent(this@RecentActivity, InformationPopupActivity::class.java)
+            intent.putExtra("tf",favoresult)
             intent.putExtra("id", item.id)
             intent.putExtra("userid", user_id)
             intent.putExtra("contents_userid", contents_userid)
             intent.putExtra("name", item.name)
             intent.putExtra("picture", pictureA)
             intent.putExtra("image_path", item.getImage_path())
-            startActivity(intent)
+            startActivityForResult(intent,1111)
+        }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+
+        if (requestCode == 1111) {
+            if (resultCode == 1125) {
+                val asyncRecents = AsyncRecents()
+                val recents_result = asyncRecents.execute(user_id.toString()).get()
+                showResult(recents_result);
+                listViewAdapter!!.notifyDataSetChanged()
+            }
         }
     }
 }

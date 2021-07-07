@@ -94,6 +94,8 @@ class MainActivity : AppCompatActivity() {
 
         val webSetting : WebSettings = webView.settings
         webSetting.javaScriptEnabled = true
+        webSetting.loadWithOverviewMode = true
+        webSetting.useWideViewPort = true
 
         val editText = findViewById<EditText>(R.id.editText2)
         val search = findViewById<View>(R.id.search_button) as Button
@@ -105,16 +107,18 @@ class MainActivity : AppCompatActivity() {
             }
             val asyncSearch = AsyncSearch(this@MainActivity)
             search_word = editText.text.toString()
-            try {
-                result2 = asyncSearch.execute(search_word).get()
-            } catch (e: Exception) {
-                e.printStackTrace()
+            if(search_word!!.length > 0) {
+                try {
+                    result2 = asyncSearch.execute(search_word).get()
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+                val intent = Intent(this@MainActivity, SearchActivity::class.java)
+                intent.putExtra("search_result", result2)
+                intent.putExtra("userid", id)
+                intent.putExtra("search", search_word)
+                startActivity(intent)
             }
-            val intent = Intent(this@MainActivity, SearchActivity::class.java)
-            intent.putExtra("search_result", result2)
-            intent.putExtra("userid",id)
-            intent.putExtra("search",search_word)
-            startActivity(intent)
         }
         val favorites = findViewById<View>(R.id.favorite)
         favorites.setOnClickListener{
@@ -194,7 +198,7 @@ class MainActivity : AppCompatActivity() {
             ACTION_MANAGE_OVERLAY_PERMISSION_REQUEST_CODE -> if (!Settings.canDrawOverlays(this)) {
                 // TODO 동의를 얻지 못했을 경우의 처리
             } else {
-                startService(Intent(this@MainActivity, MyService::class.java))
+               // startService(Intent(this@MainActivity, MyService::class.java))
             }
             123 -> {
                 if (data != null) {
@@ -208,6 +212,11 @@ class MainActivity : AppCompatActivity() {
     }
 
     companion object {
+        fun build(): View {
+            val activity = MainActivity()
+            var view = activity.window.decorView.rootView
+            return view
+        }
         var firstActivity: Activity? = null
         private const val ACTION_MANAGE_OVERLAY_PERMISSION_REQUEST_CODE = 1
     }

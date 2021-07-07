@@ -19,7 +19,7 @@ class PopupActivity : Activity() {
     var et: EditText? = null
     var uploadButton: Button? = null;
     var bt: Button? = null;
-    var uri : String? = "nono";
+    var uri : String? = "";
     var imageView : ImageView? = null;
     val PICK_FROM_ALBUM = 1;
 
@@ -45,7 +45,7 @@ class PopupActivity : Activity() {
         }
 
         bt?.setOnClickListener {
-            if(et!!.text.toString().length > 0 && uri != "nono") {
+            if(et!!.text.toString().length > 0) {
                 val name = et?.getText().toString()
                 val intent = Intent()
                 intent.putExtra("name", name)

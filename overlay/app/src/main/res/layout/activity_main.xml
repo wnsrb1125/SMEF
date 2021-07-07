@@ -7,55 +7,72 @@
     tools:context=".MainActivity">
 
     <LinearLayout
-        android:layout_marginTop="50dp"
-        android:layout_width="match_parent"
+        android:layout_marginTop="15dp"
+        android:layout_width="390dp"
         android:layout_height="0dp"
+        android:layout_gravity="center_horizontal"
         android:layout_weight="1"
         android:orientation="horizontal">
     <EditText
         android:id="@+id/editText2"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:hint="검색어를 입력하세요."/>
-
+        android:layout_weight="8"
+        android:layout_width="0dp"
+        android:layout_height="40dp"
+        android:hint=" 알고 싶은 기능을 입력하세요."
+        android:backgroundTint="@color/gray"
+        android:background="@drawable/radius"/>
 
     <Button
         android:id="@+id/search_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_weight="2"
+        android:layout_width="0dp"
+        android:layout_height="40dp"
         android:layout_marginStart="8dp"
         android:layout_marginLeft="8dp"
         android:layout_marginBottom="8dp"
         android:textSize="18dp"
+        android:textColor="@color/white2"
+        android:background="@drawable/radius"
+        android:backgroundTint="@color/colorPrimary"
         android:text="검색" />
     </LinearLayout>
 
     <WebView
+        android:layout_gravity="center_horizontal"
         android:id="@+id/webView"
-        android:layout_width="match_parent"
+        android:layout_width="390dp"
         android:layout_height="0dp"
-        android:layout_weight="7"
+        android:layout_weight="8"
+        android:background="@drawable/radius_rec"
         />
     <LinearLayout
+        android:layout_marginTop="20dp"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="0dp"
+        android:layout_weight="2"
+        android:orientation="vertical"
         android:layout_gravity="bottom">
 
         <Button
+            android:layout_gravity="center_horizontal"
             android:id="@+id/favorite"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
+            android:layout_width="390dp"
+            android:layout_height="40dp"
+            android:background="@drawable/radius_rec"
+            android:backgroundTint="@color/colorPrimary"
             android:text="즐겨찾기"
+            android:textColor="@color/white2"
             android:textSize="18dp"/>
 
         <Button
+            android:layout_marginTop="7dp"
+            android:layout_gravity="center_horizontal"
             android:id="@+id/recent"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="5dp"
-            android:layout_weight="1"
+            android:layout_width="390dp"
+            android:layout_height="40dp"
+            android:background="@drawable/radius_rec"
             android:text="최근기록"
+            android:textColor="@color/colorPrimary"
             android:textSize="18dp" />
     </LinearLayout>
 

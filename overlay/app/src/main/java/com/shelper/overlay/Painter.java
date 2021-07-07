@@ -13,6 +13,7 @@ public class Painter extends View {
 
     private Integer[] paint;
     private LinearLayout.LayoutParams lp;
+    private float density;
 
     public Painter(Context context) {
         super(context);
@@ -33,6 +34,10 @@ public class Painter extends View {
 
     }
 
+    public void setDensity(float density) {
+        this.density = density;
+        //this.ww = b;
+    }
     public void setDrawInformation(Integer SoundPaint[]) {
        this.paint = SoundPaint;
        //this.ww = b;

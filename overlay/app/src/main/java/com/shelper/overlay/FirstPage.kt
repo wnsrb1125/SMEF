@@ -1,4 +1,4 @@
-package com.shelper.overlay
+ package com.shelper.overlay
 
 import android.Manifest
 import android.app.Activity
@@ -20,6 +20,7 @@ class FirstPage : Activity() {
     private var permission1 = 0
     private var permission2 = 0
     private var permission3 = 0
+    private var permission4 = 0
     private var resultt = ""
     private var id = 0
 
@@ -30,30 +31,38 @@ class FirstPage : Activity() {
         permission1 = ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
         permission2 = ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
         permission3 = ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
+        permission4 = ContextCompat.checkSelfPermission(this, Manifest.permission.FOREGROUND_SERVICE)
         if (permission1 == PackageManager.PERMISSION_DENIED
                 || permission2 == PackageManager.PERMISSION_DENIED
-                || permission3 == PackageManager.PERMISSION_DENIED) {
+                || permission3 == PackageManager.PERMISSION_DENIED
+                || permission4 == PackageManager.PERMISSION_DENIED) {
             val intent = Intent(this@FirstPage,PermissionActivity::class.java)
             startActivity(intent)
             finish()
         }
         else {
-            if (SaveSharedPreference.getKakaoId(this@FirstPage).toString().length < 3) {
-                KakaoSdk.init(this, "a404b66a2cf6ce41ce86c61ee1b5b545")
-                login(this);
-                Log.d("로그인ㄴ",SaveSharedPreference.getKakaoId(this@FirstPage).toString())
-            } else {
-                // Call Next Activity
-                Log.d("로그인",SaveSharedPreference.getKakaoId(this).toString()+SaveSharedPreference.getId(this))
-                var login = AsyncLogin()
-                var tf_result = login.execute(SaveSharedPreference.getKakaoId(this),SaveSharedPreference.getId(this)).get()
-                if(tf_result == "true") {
-                    handleDeepLink()
-                } else {
-                    Toast.makeText(applicationContext,"잘못된 접근입니다.",Toast.LENGTH_LONG).show()
-                    finish()
-                }
-            }
+            var intent :Intent = Intent(this@FirstPage,MainActivity::class.java)
+            intent.putExtra("userid", SaveSharedPreference.getId(this))
+            Log.d("userid",SaveSharedPreference.getId(this).toString());
+            startActivity(intent)
+            finish()
+
+//            if (SaveSharedPreference.getKakaoId(this@FirstPage).toString().length < 3) {
+//                KakaoSdk.init(this, "a404b66a2cf6ce41ce86c61ee1b5b545")
+//                login(this);
+//                Log.d("로그인ㄴ",SaveSharedPreference.getKakaoId(this@FirstPage).toString())
+//            } else {
+//                // Call Next Activity
+//                Log.d("로그인",SaveSharedPreference.getKakaoId(this).toString()+SaveSharedPreference.getId(this))
+//                var login = AsyncLogin()
+//                var tf_result = login.execute(SaveSharedPreference.getKakaoId(this),SaveSharedPreference.getId(this)).get()
+//                if(tf_result == "true") {
+//                    handleDeepLink()
+//                } else {
+//                    Toast.makeText(applicationContext,"잘못된 접근입니다.",Toast.LENGTH_LONG).show()
+//                    finish()
+//                }
+//            }
         }
     }
     fun login(context: Context) {
